@@ -1,0 +1,24 @@
+[package]
+name = "tslm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+# log interface and implementation
+log = { version = "0.4.17" }
+log4rs = { version = "1.1.1" }
+
+# serialization
+serde = { version = "1.0" }
+serde_json = "1.0"
+
+# io tasking
+tokio = { version = "1.10.0", features = ["full"] }
+
+# websocket server 3 (tokio-tungstenite)
+tungstenite = "0.20.1"
+tokio-tungstenite = { version = "0.20.1", features = ["native-tls"] }
+futures = "0.3"
+futures-util = { version = "0.3" }
+futures-channel = "0.3"
