@@ -8,12 +8,12 @@ async fn listener(addr: String) {
 
     let try_socket = TcpListener::bind(&addr).await;
     let listener = try_socket.expect("Failed to bind");
-    while let Ok((stream, addr)) = listener.accept().await {
+    while let Ok((_stream, _addr)) = listener.accept().await {
         // tokio::spawn(handle_connection(state.clone(), stream, addr));
         println!("received a connection");
     }
 
-    ()
+    
 }
 
 pub struct WebsocketServer {

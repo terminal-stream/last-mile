@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     info!("Log configuration OK.");
 
-    let server = Builder::build()?;
+    let _server = Builder::build()?;
     thread::sleep(Duration::from_secs(10));
     Ok(())
 

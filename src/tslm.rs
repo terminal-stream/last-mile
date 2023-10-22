@@ -27,10 +27,10 @@ impl LastMileServer {
         let runtime = Arc::new(tokio::runtime::Builder::new_multi_thread().enable_all().build()?);
 
         let ws_rt = Arc::clone(&runtime);
-        let result = runtime.block_on(async {
+        runtime.block_on(async {
             let mut websockets = WebsocketServer::new(ws_rt);
             websockets.await_termination().await;
-            ()
+            
         });
 
         Ok(LastMileServer{
