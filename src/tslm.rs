@@ -1,16 +1,19 @@
+mod common;
+mod hub;
+mod web;
+mod endpoint;
+
 use std::sync::Arc;
 
 use crossbeam::channel::Sender;
 use tokio::runtime::Runtime;
 
 use crate::tslm::common::error::AppError;
+use crate::tslm::hub::Hub;
 use crate::tslm::web::websocket::WebsocketServer;
 
-mod common;
-mod web;
-
 pub struct Builder {
-
+    // TODO: builder
 }
 
 impl Builder {
@@ -32,10 +35,13 @@ impl LastMileServer {
 
     fn run() -> Result<Self, AppError> {
 
-        let runtime = Arc::new(tokio::runtime::Builder::new_multi_thread().enable_all().build()?);
+        let runtime = Arc::new(tokio::runtime::Builder::new_multi_thread().enable_all().build().map_err(AppError::from)?);
+
+        let hub = Arc::new(Hub::new());
 
         let ws_rt = Arc::clone(&runtime);
-        let mut websockets = WebsocketServer::new(ws_rt);
+
+        let mut websockets = WebsocketServer::new(ws_rt, Arc::clone(&hub));
 
         let (tx, rx) = crossbeam::channel::unbounded::<Command>();
 
@@ -57,7 +63,7 @@ impl LastMileServer {
     }
 
    pub fn await_termination(&self) -> Result<(), AppError> {
-        Ok(self.tx.send(Command::AwaitTermination).map_err(|_err| AppError::msg_str("Could not send command."))?)
+        Ok(self.tx.send(Command::AwaitTermination).map_err(AppError::from)?)
    }
 
 }
