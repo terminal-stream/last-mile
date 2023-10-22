@@ -1,8 +1,6 @@
 mod tslm;
 
 use std::error::Error;
-use std::thread;
-use std::time::Duration;
 
 use log4rs::append::console::ConsoleAppender;
 use log4rs::Config;
@@ -24,8 +22,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     info!("Log configuration OK.");
 
-    let _server = Builder::build()?;
-    thread::sleep(Duration::from_secs(10));
+    let server = Builder::build_and_run()?;
+    server.await_termination()?;
     Ok(())
 
 }
