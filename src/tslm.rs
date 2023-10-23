@@ -1,16 +1,16 @@
-mod common;
-mod hub;
-mod web;
-mod endpoint;
-
 use std::sync::Arc;
 
 use crossbeam::channel::Sender;
-use tokio::runtime::Runtime;
+use tokio::runtime::{Runtime, Builder as TokioRtBuilder};
 
 use crate::tslm::common::error::AppError;
 use crate::tslm::hub::Hub;
 use crate::tslm::web::websocket::WebsocketServer;
+
+mod common;
+mod hub;
+mod web;
+mod endpoint;
 
 pub struct Builder {
     // TODO: builder
@@ -22,40 +22,37 @@ impl Builder {
     }
 }
 
-enum Command {
+enum ServerCommand {
     AwaitTermination
 }
 
 pub struct LastMileServer {
     runtime: Arc<Runtime>,
-    tx: Sender<Command>,
+    tx: Sender<ServerCommand>,
 }
 
 impl LastMileServer {
 
     fn run() -> Result<Self, AppError> {
-
-        let runtime = Arc::new(tokio::runtime::Builder::new_multi_thread().enable_all().build().map_err(AppError::from)?);
-
+        let runtime = TokioRtBuilder::new_multi_thread()
+            .enable_all()
+            .build()
+            .map_err(AppError::from)?;
+        let runtime = Arc::new(runtime);
         let hub = Arc::new(Hub::new());
-
         let ws_rt = Arc::clone(&runtime);
-
         let mut websockets = WebsocketServer::new(ws_rt, Arc::clone(&hub));
-
-        let (tx, rx) = crossbeam::channel::unbounded::<Command>();
-
+        let (tx, rx) = crossbeam::channel::unbounded::<ServerCommand>();
         runtime.block_on(async {
             while let Ok(cmd) = rx.recv() {
                 match cmd {
-                    Command::AwaitTermination => {
+                    ServerCommand::AwaitTermination => {
                         websockets.await_termination().await;
                         break;
                     }
                 };
             }
         });
-
         Ok(LastMileServer{
             runtime,
             tx,
@@ -63,7 +60,7 @@ impl LastMileServer {
     }
 
    pub fn await_termination(&self) -> Result<(), AppError> {
-        Ok(self.tx.send(Command::AwaitTermination).map_err(AppError::from)?)
+        Ok(self.tx.send(ServerCommand::AwaitTermination).map_err(AppError::from)?)
    }
 
 }
