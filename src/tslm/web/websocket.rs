@@ -2,8 +2,8 @@ use std::cell::Cell;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use futures_util::{future, pin_mut, StreamExt, TryStreamExt};
-use log::warn;
+use futures_util::{future, pin_mut, SinkExt, StreamExt, TryStreamExt};
+use log::{debug, warn};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
@@ -44,8 +44,9 @@ impl WebsocketServer {
         let listener = try_socket.map_err(AppError::from)?;
         while let Ok((mut stream, addr)) = listener.accept().await {
             // Spawn asap so this does not block accepting other incoming conns.
-            let (endpoint, tx) = hub.create_endpoint();
-            runtime.spawn(WebsocketServer::connection_handler(stream, tx, endpoint));
+            if let Ok((endpoint, tx)) = hub.create_endpoint() {
+                runtime.spawn(WebsocketServer::connection_handler(stream, tx, endpoint));
+            } // else its done
         }
         Ok(())
     }
@@ -67,7 +68,20 @@ impl WebsocketServer {
                             // Tungstenite takes care of pings, we just get notified, nothing to do.
                             None
                         }
-                        Message::Text(txt) => Some(TerminalStreamCommand::Text(txt)),
+                        Message::Text(txt) => {
+                            // parse into ts command
+                            debug!("Received ws msg {}", txt);
+                            match serde_json::from_str::<TerminalStreamCommand>(txt.as_str()) {
+                                Ok(ts_cmd) => {
+                                    Some(ts_cmd)
+                                }
+                                Err(err) => {
+                                    // send error msg to client?
+                                    debug!("Invalid ts message {}", err);
+                                    None
+                                }
+                            }
+                        }
                         Message::Binary(_) => {
                             // We have nothing to do with binary msgs for now.
                             None
@@ -88,7 +102,17 @@ impl WebsocketServer {
 
                     match ts_msg {
                         Some(msg) => {
-                            endpoint.on_command(msg);
+                            match endpoint.on_command(msg) {
+                                Ok(_) => {
+                                    // send ack to the client?
+                                    debug!("Ack.");
+                                }
+                                Err(err) => {
+                                    // send the error to the client?
+                                    debug!("Error: {}", err);
+                                }
+                            }
+
                         }
                         None => {
                             // this resulted in an impl protocol message that does not need to be sent to the endpoint
@@ -101,7 +125,10 @@ impl WebsocketServer {
                 // handle processing messages going to the websocket
                 let handle_outgoing = ts_receiver
                     .map(|ts_msg| match ts_msg {
-                        ClientCommand::Text(msg) => Ok(Message::text(msg)),
+                        ClientCommand::Text(msg) => {
+                            debug!("sending to ws: {}", msg);
+                            Ok(Message::text(msg))
+                        }
                     })
                     .forward(tx);
 
