@@ -1,9 +1,10 @@
 use std::sync::{Arc, Mutex};
 
-use futures_channel::mpsc::{UnboundedReceiver, UnboundedSender};
+// use futures_channel::mpsc::{UnboundedReceiver, UnboundedSender};
 use futures_util::{SinkExt, TryFutureExt};
 use log::{error, info};
 use serde::Deserialize;
+use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
 use crate::tslm::common::error::AppError;
 use crate::tslm::hub::Directory;
@@ -32,7 +33,7 @@ pub enum ClientCommand {
 
 pub struct Endpoint {
     pub id: EndpointId,
-    tx: Mutex<UnboundedSender<ClientCommand>>,
+    tx: UnboundedSender<ClientCommand>,
     directory: Arc<Directory>,
 }
 
@@ -40,8 +41,9 @@ impl Endpoint {
 
     pub fn new(id: EndpointId, directory: Arc<Directory>) -> (Arc<Self>, UnboundedReceiver<ClientCommand>) {
         // messages going out
-        let (tx, rx) = futures_channel::mpsc::unbounded();
-        let tx = Mutex::new(tx);
+        // let (tx, rx) = futures_channel::mpsc::unbounded();
+        let (tx, rx) = unbounded_channel::<ClientCommand>();
+        // let tx = Mutex::new(tx);
         let endpoint = Arc::new(Endpoint {
             id,
             tx,

@@ -6,6 +6,7 @@ use futures_util::{future, pin_mut, SinkExt, StreamExt, TryStreamExt};
 use log::{debug, warn};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::Runtime;
+use tokio::sync::mpsc::UnboundedReceiver;
 use tokio::task::JoinHandle;
 use tokio_tungstenite::{accept_async, WebSocketStream};
 use tungstenite::Message;
@@ -53,13 +54,14 @@ impl WebsocketServer {
 
     async fn connection_handler(
         tcp_stream: TcpStream,
-        ts_receiver: futures_channel::mpsc::UnboundedReceiver<ClientCommand>,
+        // ts_receiver: futures_channel::mpsc::UnboundedReceiver<ClientCommand>,
+        ts_receiver: UnboundedReceiver<ClientCommand>,
         endpoint: Arc<Endpoint>,
     ) {
         let mut ws_stream = accept_async(tcp_stream).await.map_err(AppError::from);
         match ws_stream {
             Ok(tcp_stream) => {
-                let (tx, rx) = tcp_stream.split();
+                let (mut tx, rx) = tcp_stream.split();
 
                 // decode/map into a terminal stream message.
                 let handle_incoming = rx.try_for_each(|msg: Message| {
@@ -122,15 +124,26 @@ impl WebsocketServer {
                     future::ok(())
                 });
 
+                // let handle_outgoing = ts_receiver.map(Ok).forward(tx);
+
+                // let handle_outgoing = tx.send(Message::Text("hola".to_string()));
+                let handle_outgoing = ts_receiver.map(|m| {
+                   Ok(Message::Text("Hola".to_string()))
+                }).forward(tx);
+
+                /*
                 // handle processing messages going to the websocket
                 let handle_outgoing = ts_receiver
                     .map(|ts_msg| match ts_msg {
                         ClientCommand::Text(msg) => {
-                            debug!("sending to ws: {}", msg);
+                            // debug!("sending to ws: {}", msg);
                             Ok(Message::text(msg))
+                            // future::ok(Message::Text(msg))
                         }
                     })
                     .forward(tx);
+
+                 */
 
                 pin_mut!(handle_incoming, handle_outgoing);
                 future::select(handle_incoming, handle_outgoing).await;

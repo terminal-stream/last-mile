@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::sync::atomic::{AtomicU64, Ordering};
-use futures_channel::mpsc::UnboundedReceiver;
+// use futures_channel::mpsc::UnboundedReceiver;
 use log::{debug, error};
+use tokio::sync::mpsc::UnboundedReceiver;
 use crate::tslm::common::error::AppError;
 use crate::tslm::endpoint::{ChannelId, ChannelMessage, ClientCommand, Endpoint, EndpointId};
 
@@ -136,9 +137,9 @@ impl Hub {
 
     pub fn create_endpoint(&self) -> Result<(Arc<Endpoint>, UnboundedReceiver<ClientCommand>), AppError> {
         let directory = Arc::clone(&self.directory);
-        let (endpoint, tx) = Endpoint::new(self.endpoint_id_seq.next(), directory);
+        let (endpoint, rx) = Endpoint::new(self.endpoint_id_seq.next(), directory);
         self.directory.register_endpoint(Arc::clone(&endpoint))?;
-        Ok((endpoint, tx))
+        Ok((endpoint, rx))
     }
 }
 
