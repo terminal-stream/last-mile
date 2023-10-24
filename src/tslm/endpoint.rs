@@ -8,25 +8,25 @@ use crate::tslm::hub::{ChannelId, Directory};
 
 pub type EndpointId = u64;
 
-
 #[derive(Debug, Deserialize, Clone)]
 pub enum ChannelMessage {
-   Text(String),
+    Text(String),
 }
 
 #[derive(Debug, Deserialize)]
 pub enum TerminalStreamCommand {
     CreateChannel(ChannelId),
     Subscribe(ChannelId),
-    NotifyChannel(ChannelId, ChannelMessage)
+    NotifyChannel(ChannelId, ChannelMessage),
 }
 
 #[derive(Debug, Serialize, Clone)]
 pub enum ClientCommand {
-    // text primitive, not very useful, just for debugging
+    /// text primitive, useful for debugging
+    #[allow(dead_code)]
     Text(String),
-    // a message from the given channel
-    ChannelMessage(ChannelId, String)
+    /// An incoming message from the given channel
+    ChannelMessage(ChannelId, String),
 }
 
 pub struct Endpoint {
@@ -36,18 +36,13 @@ pub struct Endpoint {
 }
 
 impl Endpoint {
-
-    pub fn new(id: EndpointId, directory: Arc<Directory>)
-               -> (Arc<Endpoint>,
-                   UnboundedReceiver<ClientCommand>
-               ) {
+    pub fn new(
+        id: EndpointId,
+        directory: Arc<Directory>,
+    ) -> (Arc<Endpoint>, UnboundedReceiver<ClientCommand>) {
         let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
 
-        let endpoint = Arc::new(Endpoint {
-            id,
-            tx,
-            directory,
-        });
+        let endpoint = Arc::new(Endpoint { id, tx, directory });
         (endpoint, rx)
     }
 
@@ -56,9 +51,7 @@ impl Endpoint {
             TerminalStreamCommand::CreateChannel(channel_id) => {
                 self.directory.create_channel(channel_id)
             }
-            TerminalStreamCommand::Subscribe(channel_id) => {
-                self.subscribe(&channel_id)
-            }
+            TerminalStreamCommand::Subscribe(channel_id) => self.subscribe(&channel_id),
             TerminalStreamCommand::NotifyChannel(channel_id, msg) => {
                 self.notify_channel(&channel_id, &msg)
             }
@@ -66,14 +59,20 @@ impl Endpoint {
     }
 
     fn notify_channel(&self, channel_id: &ChannelId, msg: &ChannelMessage) -> Result<(), AppError> {
-        let channel = self.directory.find_channel(channel_id).ok_or(AppError::msg_str("Channel not found."))?;
+        let channel = self
+            .directory
+            .find_channel(channel_id)
+            .ok_or(AppError::msg_str("Channel not found."))?;
         channel.publish(msg.clone())
     }
 
     fn subscribe(&self, channel_id: &ChannelId) -> Result<(), AppError> {
-        let self_reference = self.directory.find_endpoint(&self.id)
+        let self_reference = self
+            .directory
+            .find_endpoint(&self.id)
             .ok_or(AppError::msg_str("Self reference not found!!"))?;
-        self.directory.subscribe_to_channel(&channel_id, self_reference)
+        self.directory
+            .subscribe_to_channel(channel_id, self_reference)
     }
 
     // send this command to the client
@@ -82,4 +81,3 @@ impl Endpoint {
         Ok(())
     }
 }
-

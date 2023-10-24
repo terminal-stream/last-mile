@@ -1,16 +1,16 @@
 use std::sync::Arc;
 
 use crossbeam::channel::Sender;
-use tokio::runtime::{Runtime, Builder as TokioRtBuilder};
+use tokio::runtime::Builder as TokioRtBuilder;
 
 use crate::tslm::common::error::AppError;
 use crate::tslm::hub::Hub;
 use crate::tslm::web::websocket::WebsocketServer;
 
 mod common;
+mod endpoint;
 mod hub;
 mod web;
-mod endpoint;
 
 pub struct Builder {
     // TODO: builder
@@ -23,16 +23,14 @@ impl Builder {
 }
 
 enum ServerCommand {
-    AwaitTermination
+    AwaitTermination,
 }
 
 pub struct LastMileServer {
-    runtime: Arc<Runtime>,
     tx: Sender<ServerCommand>,
 }
 
 impl LastMileServer {
-
     fn run() -> Result<Self, AppError> {
         let runtime = TokioRtBuilder::new_multi_thread()
             .enable_all()
@@ -44,6 +42,7 @@ impl LastMileServer {
         let mut websockets = WebsocketServer::new(ws_rt, Arc::clone(&hub));
         let (tx, rx) = crossbeam::channel::unbounded::<ServerCommand>();
         runtime.block_on(async {
+            #[allow(clippy::never_loop)]
             while let Ok(cmd) = rx.recv() {
                 match cmd {
                     ServerCommand::AwaitTermination => {
@@ -53,14 +52,12 @@ impl LastMileServer {
                 };
             }
         });
-        Ok(LastMileServer{
-            runtime,
-            tx,
-        })
+        Ok(LastMileServer { tx })
     }
 
-   pub fn await_termination(&self) -> Result<(), AppError> {
-        Ok(self.tx.send(ServerCommand::AwaitTermination).map_err(AppError::from)?)
-   }
-
+    pub fn await_termination(&self) -> Result<(), AppError> {
+        self.tx
+            .send(ServerCommand::AwaitTermination)
+            .map_err(AppError::from)
+    }
 }

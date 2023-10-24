@@ -8,9 +8,7 @@ pub struct AppError {
 
 impl AppError {
     pub fn msg(msg: String) -> Self {
-        AppError {
-            msg
-        }
+        AppError { msg }
     }
     pub fn msg_str(msg: &str) -> Self {
         AppError::msg(String::from(msg))
@@ -18,7 +16,6 @@ impl AppError {
     pub fn from(error: impl Error) -> Self {
         AppError::msg(error.to_string())
     }
-
 }
 
 impl Error for AppError {}

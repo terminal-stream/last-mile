@@ -1,10 +1,9 @@
 use std::cell::Cell;
-use std::net::SocketAddr;
 use std::sync::Arc;
 
-use futures_util::{pin_mut, SinkExt, StreamExt, TryStreamExt};
 use futures_util::future::select;
 use futures_util::stream::SplitSink;
+use futures_util::{pin_mut, SinkExt, StreamExt};
 use log::{debug, error, warn};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::Runtime;
@@ -16,18 +15,6 @@ use tungstenite::Message;
 use crate::tslm::common::error::AppError;
 use crate::tslm::endpoint::{ClientCommand, Endpoint, TerminalStreamCommand};
 use crate::tslm::Hub;
-
-pub struct WebsocketEndpoint {
-    addr: SocketAddr,
-    ws_stream: WebSocketStream<TcpStream>,
-}
-
-impl WebsocketEndpoint {
-    pub async fn handshake(stream: TcpStream, addr: SocketAddr) -> Result<Self, AppError> {
-        let ws_stream = accept_async(stream).await.map_err(AppError::from)?;
-        Ok(WebsocketEndpoint { ws_stream, addr })
-    }
-}
 
 pub struct WebsocketServer {
     listener_handle: Cell<JoinHandle<Result<(), AppError>>>,
@@ -45,7 +32,7 @@ impl WebsocketServer {
     async fn listener(addr: String, hub: Arc<Hub>, runtime: Arc<Runtime>) -> Result<(), AppError> {
         let try_socket = TcpListener::bind(&addr).await;
         let listener = try_socket.map_err(AppError::from)?;
-        while let Ok((mut stream, addr)) = listener.accept().await {
+        while let Ok((stream, _addr)) = listener.accept().await {
             // Spawn asap so this does not block accepting other incoming conns.
             if let Ok((endpoint, tx)) = hub.create_endpoint() {
                 runtime.spawn(WebsocketServer::connection_handler(stream, tx, endpoint));
@@ -59,12 +46,12 @@ impl WebsocketServer {
         mut ts_receiver: UnboundedReceiver<ClientCommand>,
         endpoint: Arc<Endpoint>,
     ) {
-        let mut ws_stream = accept_async(tcp_stream).await.map_err(AppError::from);
+        let ws_stream = accept_async(tcp_stream).await.map_err(AppError::from);
         match ws_stream {
             Err(err) => {
                 warn!("Ws stream produced an error during the handshake: {}", err);
             }
-            Ok(mut tcp_stream) => {
+            Ok(tcp_stream) => {
                 let (mut tx, mut rx) = tcp_stream.split();
                 let incoming = async move {
                     // stop on none
@@ -94,9 +81,14 @@ impl WebsocketServer {
         };
     }
 
-    async fn handle_outgoing_message(tx: &mut SplitSink<WebSocketStream<TcpStream>, Message>, cmd: ClientCommand) -> Result<(), AppError> {
+    async fn handle_outgoing_message(
+        tx: &mut SplitSink<WebSocketStream<TcpStream>, Message>,
+        cmd: ClientCommand,
+    ) -> Result<(), AppError> {
         let json_string_command = serde_json::to_string(&cmd).map_err(AppError::from)?;
-        tx.send(Message::Text(json_string_command)).await.map_err(AppError::from)
+        tx.send(Message::Text(json_string_command))
+            .await
+            .map_err(AppError::from)
     }
 
     fn handle_incoming_message(endpoint: &Endpoint, msg: Message) {
@@ -109,9 +101,7 @@ impl WebsocketServer {
                 // parse into ts command
                 debug!("Received ws msg {}", txt);
                 match serde_json::from_str::<TerminalStreamCommand>(txt.as_str()) {
-                    Ok(ts_cmd) => {
-                        Some(ts_cmd)
-                    }
+                    Ok(ts_cmd) => Some(ts_cmd),
                     Err(err) => {
                         // send error msg to client?
                         debug!("Invalid ts message {}", err);

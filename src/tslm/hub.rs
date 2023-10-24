@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, RwLock};
 
 use log::{debug, error};
 use tokio::sync::mpsc::UnboundedReceiver;
@@ -31,7 +31,6 @@ pub struct Channel {
 }
 
 impl Channel {
-
     pub fn new(channel_id: ChannelId) -> Self {
         Channel {
             channel_id,
@@ -63,7 +62,7 @@ impl Channel {
                     error!("Error sending channel message: {}", err);
                 }
             }
-        };
+        }
         Ok(())
     }
 }
@@ -74,9 +73,8 @@ pub struct Directory {
 }
 
 impl Directory {
-
     pub fn new() -> Self {
-        Directory{
+        Directory {
             channels_by_id: RwLock::new(HashMap::default()),
             endpoints_by_id: RwLock::new(HashMap::default()),
         }
@@ -86,7 +84,9 @@ impl Directory {
         let mut endpoints = self.endpoints_by_id.write().map_err(AppError::from)?;
         // would be weird if this was registered twice
         if endpoints.contains_key(&endpoint.id) {
-            return Err(AppError::msg_str("Endpoint already registered under given id."));
+            return Err(AppError::msg_str(
+                "Endpoint already registered under given id.",
+            ));
         }
         let _ = endpoints.insert(endpoint.id, endpoint);
         Ok(())
@@ -94,10 +94,7 @@ impl Directory {
 
     pub fn find_endpoint(&self, endpoint_id: &EndpointId) -> Option<Arc<Endpoint>> {
         let endpoints = self.endpoints_by_id.read().map_err(AppError::from).ok()?;
-        match endpoints.get(&endpoint_id) {
-            None => {None}
-            Some(endpoint) => {Some(Arc::clone(&endpoint))}
-        }
+        endpoints.get(endpoint_id).map(Arc::clone)
     }
 
     /// Create a channel.
@@ -115,45 +112,42 @@ impl Directory {
 
     pub fn find_channel(&self, channel_id: &ChannelId) -> Option<Arc<Channel>> {
         let channels = self.channels_by_id.read().map_err(AppError::from).ok()?;
-        match channels.get(channel_id) {
-            None => None,
-            Some(channel) => Some(Arc::clone(&channel))
-        }
-
+        channels.get(channel_id).map(Arc::clone)
     }
 
     /// Subscribe the endpoint to the given channel id.
-    pub fn subscribe_to_channel(&self, channel_id: &ChannelId, endpoint: Arc<Endpoint>) -> Result<(), AppError> {
-        let channel = self.find_channel(channel_id).ok_or(AppError::msg_str("No such channel"))?;
+    pub fn subscribe_to_channel(
+        &self,
+        channel_id: &ChannelId,
+        endpoint: Arc<Endpoint>,
+    ) -> Result<(), AppError> {
+        let channel = self
+            .find_channel(channel_id)
+            .ok_or(AppError::msg_str("No such channel"))?;
         channel.subscribe(endpoint)
     }
 }
 
 pub struct Hub {
     endpoint_id_seq: Sequence,
-    directory: Arc<Directory>
+    directory: Arc<Directory>,
 }
 
 impl Hub {
-
     pub fn new() -> Self {
-
         let directory = Arc::new(Directory::new());
         Hub {
             endpoint_id_seq: Sequence::new(),
-            directory
+            directory,
         }
     }
 
-    pub fn create_endpoint(&self)
-        -> Result<(
-            Arc<Endpoint>,
-            UnboundedReceiver<ClientCommand>,
-        ), AppError> {
+    pub fn create_endpoint(
+        &self,
+    ) -> Result<(Arc<Endpoint>, UnboundedReceiver<ClientCommand>), AppError> {
         let directory = Arc::clone(&self.directory);
         let (endpoint, rx) = Endpoint::new(self.endpoint_id_seq.next(), directory);
         self.directory.register_endpoint(Arc::clone(&endpoint))?;
         Ok((endpoint, rx))
     }
 }
-
