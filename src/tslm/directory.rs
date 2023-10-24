@@ -1,8 +1,9 @@
+use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
+
 use crate::tslm::channel::{Channel, ChannelId};
 use crate::tslm::endpoint::{Endpoint, EndpointId};
 use crate::tslm::error::AppError;
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 
 pub struct Directory {
     channels_by_id: RwLock<HashMap<ChannelId, Arc<Channel>>>,

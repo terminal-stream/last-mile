@@ -1,12 +1,10 @@
-use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
-use crate::tslm::directory::Directory;
-use log::{debug, error};
 use tokio::sync::mpsc::UnboundedReceiver;
 
-use crate::tslm::endpoint::{ChannelMessage, ClientCommand, Endpoint, EndpointId};
+use crate::tslm::directory::Directory;
+use crate::tslm::endpoint::{ClientCommand, Endpoint};
 use crate::tslm::error::AppError;
 
 pub struct Sequence {

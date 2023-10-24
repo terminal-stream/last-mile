@@ -1,7 +1,9 @@
+use std::sync::{Arc, RwLock};
+
+use log::{debug, error};
+
 use crate::tslm::endpoint::{ChannelMessage, ClientCommand, Endpoint};
 use crate::tslm::error::AppError;
-use log::{debug, error};
-use std::sync::{Arc, RwLock};
 
 pub type ChannelId = String;
 
