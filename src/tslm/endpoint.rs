@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+use crate::tslm::error::AppError;
 
-use crate::tslm::common::error::AppError;
 use crate::tslm::hub::{ChannelId, Directory};
 
 pub type EndpointId = u64;

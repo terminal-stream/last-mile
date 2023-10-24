@@ -5,8 +5,8 @@ use std::sync::{Arc, RwLock};
 use log::{debug, error};
 use tokio::sync::mpsc::UnboundedReceiver;
 
-use crate::tslm::common::error::AppError;
 use crate::tslm::endpoint::{ChannelMessage, ClientCommand, Endpoint, EndpointId};
+use crate::tslm::error::AppError;
 
 pub type ChannelId = String;
 

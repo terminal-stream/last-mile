@@ -12,9 +12,9 @@ use tokio::task::JoinHandle;
 use tokio_tungstenite::{accept_async, WebSocketStream};
 use tungstenite::Message;
 
-use crate::tslm::common::error::AppError;
 use crate::tslm::endpoint::{ClientCommand, Endpoint, TerminalStreamCommand};
-use crate::tslm::Hub;
+use crate::tslm::error::AppError;
+use crate::tslm::hub::Hub;
 
 pub struct WebsocketServer {
     listener_handle: Cell<JoinHandle<Result<(), AppError>>>,

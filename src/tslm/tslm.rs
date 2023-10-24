@@ -2,15 +2,9 @@ use std::sync::Arc;
 
 use crossbeam::channel::Sender;
 use tokio::runtime::Builder as TokioRtBuilder;
-
-use crate::tslm::common::error::AppError;
+use crate::tslm::error::AppError;
 use crate::tslm::hub::Hub;
-use crate::tslm::web::websocket::WebsocketServer;
-
-mod common;
-mod endpoint;
-mod hub;
-mod web;
+use crate::tslm::websocket::WebsocketServer;
 
 pub struct Builder {
     // TODO: builder
