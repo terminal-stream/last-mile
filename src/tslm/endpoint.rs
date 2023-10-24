@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+use tokio::sync::mpsc::error::SendError;
 
 use crate::tslm::channel::ChannelId;
 use crate::tslm::directory::Directory;
@@ -78,7 +79,6 @@ impl Endpoint {
 
     // send this command to the client
     pub fn send(&self, msg: ClientCommand) -> Result<(), AppError> {
-        self.tx.send(msg).unwrap();
-        Ok(())
+        self.tx.send(msg).map_err(AppError::from)
     }
 }
