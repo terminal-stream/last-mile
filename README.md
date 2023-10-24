@@ -3,10 +3,11 @@
  This is an async websocket server written in Rust using tokio-tungstenite.
 
  Allows for a websocket client to:
-    * Create a channel.
-    * Notify the channel with some data.
-    * Subscribe to a channel.
-    * Receive messages from the subscribed channels.
+
+* Create a channel.
+* Notify the channel with some data.
+* Subscribe to a channel.
+* Receive messages from the subscribed channels.
 
  My reason to write this is that I have built a service that streams real time technical indicator data and 
 events for trading and I wanted to display some of the data online using TradingView's charts with a few considerations:
