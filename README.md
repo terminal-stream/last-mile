@@ -1,25 +1,29 @@
 # TSLM - Terminal Stream Last Mile
 
- This is an async websocket server written in Rust using tokio-tungstenite.
+---
 
- Allows for a websocket client to:
+This is an asynchronous WebSocket server written in Rust using tokio-tungstenite. It allows a WebSocket client to
+perform the following actions:
 
-* Create a channel.
-* Notify the channel with some data.
-* Subscribe to a channel.
-* Receive messages from the subscribed channels.
+- Create a channel.
+- Notify the channel with relevant data.
+- Subscribe to a channel.
+- Receive messages from the subscribed channels.
 
- My reason to write this is that I have built a service that streams real time technical indicator data and 
-events for trading and I wanted to display some of the data online using TradingView's charts with a few considerations:
+The inception of this server finds its roots in the creation of a service for a companion project, "terminal.stream."
 
- 1) The streams use gRPC/Protobuf and I wanted to display the information on a public website
- 2) Easiest way to stream data online to a website is using websockets
- 3) I don't want internet/public traffic connecting to my internal/private network
+Terminal Stream is the source of real-time technical indicators and trading events. My objective is to thoughtfully
+curate and present select events to the public, rather than exposing all of them.
 
- So this server is supposed to sit in the boundaries of the network where it binds to a specific Ip/Port for public
-connections and another one for the internal traffic pushing the data I want to stream to the public.
+Our aim is to effectively showcase a subset of this data on a public website, all while preserving the confidentiality
+of our internal services. Several considerations drive this endeavor:
 
- This is a server I have put together over the weekend, don't expect much!
- 
+1. The technical indicator streams are delivered through gRPC/Protobuf, presenting challenges in directly pushing this data to a web interface.
+2. The most efficient method for real-time data display on a website is through WebSocket connections.
+3. There's a pressing requirement to demarcate and shield our internal/private network from the internet/public traffic.
 
- 
+Consequently, this server serves as an intermediary within the network, binding to specific IP addresses and ports. It
+allows public connections while also facilitating the secure transmission of the desired data to the public domain.
+
+It's important to note that this server is a weekend project, and while functional, it might not have the full range of
+features you might expect from a more extensive, dedicated development effort.
