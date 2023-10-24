@@ -1,11 +1,14 @@
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::sync::atomic::{AtomicU64, Ordering};
-// use futures_channel::mpsc::UnboundedReceiver;
+
 use log::{debug, error};
 use tokio::sync::mpsc::UnboundedReceiver;
+
 use crate::tslm::common::error::AppError;
-use crate::tslm::endpoint::{ChannelId, ChannelMessage, ClientCommand, Endpoint, EndpointId};
+use crate::tslm::endpoint::{ChannelMessage, ClientCommand, Endpoint, EndpointId};
+
+pub type ChannelId = String;
 
 pub struct Sequence {
     gen: AtomicU64,
@@ -44,8 +47,15 @@ impl Channel {
 
     pub fn publish(&self, message: ChannelMessage) -> Result<(), AppError> {
         let subscriptions = self.subscriptions.read().map_err(AppError::from)?;
-        subscriptions.iter().for_each(|endpoint| {
-            match endpoint.send(ClientCommand::Text("Hola".to_string())) {
+
+        let client_cmd = match message {
+            ChannelMessage::Text(txt) => {
+                ClientCommand::ChannelMessage(self.channel_id.clone(), txt)
+            }
+        };
+        for endpoint in subscriptions.iter() {
+            // need to make a copy for each
+            match endpoint.send(client_cmd.clone()) {
                 Ok(_) => {
                     debug!("Sent msg correctly.");
                 }
@@ -53,7 +63,7 @@ impl Channel {
                     error!("Error sending channel message: {}", err);
                 }
             }
-        });
+        };
         Ok(())
     }
 }
@@ -135,7 +145,11 @@ impl Hub {
         }
     }
 
-    pub fn create_endpoint(&self) -> Result<(Arc<Endpoint>, UnboundedReceiver<ClientCommand>), AppError> {
+    pub fn create_endpoint(&self)
+        -> Result<(
+            Arc<Endpoint>,
+            UnboundedReceiver<ClientCommand>,
+        ), AppError> {
         let directory = Arc::clone(&self.directory);
         let (endpoint, rx) = Endpoint::new(self.endpoint_id_seq.next(), directory);
         self.directory.register_endpoint(Arc::clone(&endpoint))?;

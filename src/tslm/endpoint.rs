@@ -1,20 +1,16 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
-// use futures_channel::mpsc::{UnboundedReceiver, UnboundedSender};
-use futures_util::{SinkExt, TryFutureExt};
-use log::{error, info};
-use serde::Deserialize;
-use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
+use serde::{Deserialize, Serialize};
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 use crate::tslm::common::error::AppError;
-use crate::tslm::hub::Directory;
+use crate::tslm::hub::{ChannelId, Directory};
 
 pub type EndpointId = u64;
-pub type ChannelId = String;
+
 
 #[derive(Debug, Deserialize, Clone)]
 pub enum ChannelMessage {
-   // text primitive, not very useful, just for debugging
    Text(String),
 }
 
@@ -25,25 +21,28 @@ pub enum TerminalStreamCommand {
     NotifyChannel(ChannelId, ChannelMessage)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Clone)]
 pub enum ClientCommand {
     // text primitive, not very useful, just for debugging
-    Text(String)
+    Text(String),
+    // a message from the given channel
+    ChannelMessage(ChannelId, String)
 }
 
 pub struct Endpoint {
     pub id: EndpointId,
-    tx: UnboundedSender<ClientCommand>,
     directory: Arc<Directory>,
+    tx: UnboundedSender<ClientCommand>,
 }
 
 impl Endpoint {
 
-    pub fn new(id: EndpointId, directory: Arc<Directory>) -> (Arc<Self>, UnboundedReceiver<ClientCommand>) {
-        // messages going out
-        // let (tx, rx) = futures_channel::mpsc::unbounded();
-        let (tx, rx) = unbounded_channel::<ClientCommand>();
-        // let tx = Mutex::new(tx);
+    pub fn new(id: EndpointId, directory: Arc<Directory>)
+               -> (Arc<Endpoint>,
+                   UnboundedReceiver<ClientCommand>
+               ) {
+        let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+
         let endpoint = Arc::new(Endpoint {
             id,
             tx,
@@ -52,9 +51,7 @@ impl Endpoint {
         (endpoint, rx)
     }
 
-    // the client has sent a command to process
     pub fn on_command(&self, cmd: TerminalStreamCommand) -> Result<(), AppError> {
-        // debug!("cmd {:?}", ts_msg);
         match cmd {
             TerminalStreamCommand::CreateChannel(channel_id) => {
                 self.directory.create_channel(channel_id)
@@ -81,12 +78,7 @@ impl Endpoint {
 
     // send this command to the client
     pub fn send(&self, msg: ClientCommand) -> Result<(), AppError> {
-        let mut tx = self.tx.lock().map_err(AppError::from)?;
-        let a = tx.send(msg).unwrap_or_else(|a| {
-            // todo unmount endpoint
-            info!("Error");
-        });
-        info!("sent!!");
+        self.tx.send(msg).unwrap();
         Ok(())
     }
 }
