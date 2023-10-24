@@ -18,7 +18,8 @@ curate and present select events to the public, rather than exposing all of them
 Our aim is to effectively showcase a subset of this data on a public website, all while preserving the confidentiality
 of our internal services. Several considerations drive this endeavor:
 
-1. The technical indicator streams are delivered through gRPC/Protobuf, presenting challenges in directly pushing this data to a web interface.
+1. The technical indicator streams are delivered through gRPC/Protobuf, presenting challenges in directly pushing this
+   data to a web interface.
 2. The most efficient method for real-time data display on a website is through WebSocket connections.
 3. There's a pressing requirement to demarcate and shield our internal/private network from the internet/public traffic.
 
