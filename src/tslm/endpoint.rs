@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
+
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
-use tokio::sync::mpsc::error::SendError;
 
 use crate::tslm::channel::ChannelId;
 use crate::tslm::directory::Directory;

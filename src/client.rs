@@ -2,10 +2,10 @@ use std::error::Error;
 use std::sync::Arc;
 use std::time::Duration;
 
+use log::{LevelFilter};
 use log4rs::append::console::ConsoleAppender;
-use log4rs::Config;
 use log4rs::config::{Appender, Root};
-use log::{info, LevelFilter};
+use log4rs::Config;
 use tokio::runtime::Builder;
 use tokio::time::sleep;
 
@@ -14,7 +14,6 @@ use crate::tslm::client::client::LastMileClient;
 mod tslm;
 
 pub fn main() -> Result<(), Box<dyn Error>> {
-
     let stdout = ConsoleAppender::builder().build();
 
     let config = Config::builder()
@@ -27,7 +26,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     let url = String::from("ws://localhost:8080/");
 
     let ws_rt = Arc::clone(&runtime);
-    let _r : Result<(), Box<dyn Error>> = runtime.block_on(async move {
+    let _r: Result<(), Box<dyn Error>> = runtime.block_on(async move {
         let client = LastMileClient::connect(ws_rt, url)?;
 
         let channel_id = String::from("some_channel");
@@ -44,5 +43,4 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     });
 
     Ok(())
-
 }

@@ -1,8 +1,8 @@
-mod error;
 mod channel;
+pub mod client;
 mod directory;
 mod endpoint;
+mod error;
 mod hub;
-mod websocket;
 pub mod server;
-pub mod client;
+mod websocket;

@@ -1,7 +1,8 @@
-use std::error::Error;
+
 use std::str::FromStr;
 use std::sync::Arc;
 
+use crate::tslm::error::AppError;
 use futures_util::{future, pin_mut, SinkExt, StreamExt};
 use log::error;
 use tokio::runtime::Runtime;
@@ -9,7 +10,6 @@ use tokio::sync::mpsc::UnboundedSender;
 use tokio::task::JoinHandle;
 use tokio_tungstenite::tungstenite::http::Uri;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
-use crate::tslm::error::AppError;
 
 pub struct Websocket<H>
 where
@@ -38,9 +38,7 @@ where
 
         let handler_ref = Arc::clone(&handler);
         let handle: JoinHandle<Result<(), AppError>> = runtime.spawn(async move {
-            let (ws_stream, _response) = connect_async(&uri)
-                .await
-                .map_err(AppError::from)?;
+            let (ws_stream, _response) = connect_async(&uri).await.map_err(AppError::from)?;
 
             handler_ref.on_connect();
 

@@ -1,4 +1,4 @@
-use std::error::Error;
+
 use std::sync::Arc;
 
 use log::{debug, error};
@@ -16,19 +16,12 @@ pub struct LastMileClient {
 }
 
 impl LastMileClient {
-
     pub fn connect(runtime: Arc<Runtime>, url: String) -> Result<Self, AppError> {
-
-        let handler = Arc::new(LastMileClientHandler {
-        });
+        let handler = Arc::new(LastMileClientHandler {});
 
         let ws = Websocket::open(&runtime, url, Arc::clone(&handler)).map_err(AppError::from)?;
 
-        Ok(LastMileClient {
-            handler,
-            ws
-        })
-
+        Ok(LastMileClient { handler, ws })
     }
     fn send(&self, command: TerminalStreamCommand) -> Result<(), AppError> {
         let message = serde_json::to_string(&command).map_err(AppError::from)?;
@@ -47,14 +40,12 @@ impl LastMileClient {
     }
 
     pub fn notify_channel(&self, channel_id: &ChannelId, text: String) -> Result<(), AppError> {
-        let command = TerminalStreamCommand::NotifyChannel(channel_id.clone(), ChannelMessage::Text(text));
+        let command =
+            TerminalStreamCommand::NotifyChannel(channel_id.clone(), ChannelMessage::Text(text));
         self.send(command)
     }
-
 }
-pub struct LastMileClientHandler {
-
-}
+pub struct LastMileClientHandler {}
 
 impl WebsocketEventHandler for LastMileClientHandler {
     fn on_connect(&self) {
@@ -73,4 +64,3 @@ impl WebsocketEventHandler for LastMileClientHandler {
         debug!("TSLM client closed.");
     }
 }
-

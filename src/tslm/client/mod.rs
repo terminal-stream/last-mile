@@ -1,2 +1,2 @@
-mod websocket;
 pub mod client;
+mod websocket;
