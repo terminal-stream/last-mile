@@ -5,3 +5,4 @@ mod endpoint;
 mod hub;
 mod websocket;
 pub mod server;
+pub mod client;

@@ -10,19 +10,19 @@ use crate::tslm::error::AppError;
 
 pub type EndpointId = u64;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ChannelMessage {
     Text(String),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum TerminalStreamCommand {
     CreateChannel(ChannelId),
     Subscribe(ChannelId),
     NotifyChannel(ChannelId, ChannelMessage),
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ClientCommand {
     /// text primitive, useful for debugging
     #[allow(dead_code)]
