@@ -1,11 +1,11 @@
 use std::sync::{Arc, RwLock};
 
+use crate::tslm::endpoint::Endpoint;
+use common::error::AppError;
+use common::message::{ChannelMessage, ClientCommand};
 use log::{debug, error};
 
-use crate::tslm::endpoint::{ChannelMessage, ClientCommand, Endpoint};
-use crate::tslm::error::AppError;
-
-pub type ChannelId = String;
+type ChannelId = common::message::ChannelId;
 
 pub struct Channel {
     pub channel_id: ChannelId,

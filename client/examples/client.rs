@@ -2,16 +2,13 @@ use std::error::Error;
 use std::sync::Arc;
 use std::time::Duration;
 
-use log::{LevelFilter};
+use client::client::LastMileClient;
+use log::LevelFilter;
 use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Root};
 use log4rs::Config;
 use tokio::runtime::Builder;
 use tokio::time::sleep;
-
-use crate::tslm::client::client::LastMileClient;
-
-mod tslm;
 
 pub fn main() -> Result<(), Box<dyn Error>> {
     let stdout = ConsoleAppender::builder().build();

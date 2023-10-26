@@ -1,11 +1,12 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
+use common::error::AppError;
+use common::message::ClientCommand;
 use tokio::sync::mpsc::UnboundedReceiver;
 
 use crate::tslm::directory::Directory;
-use crate::tslm::endpoint::{ClientCommand, Endpoint};
-use crate::tslm::error::AppError;
+use crate::tslm::endpoint::Endpoint;
 
 pub struct Sequence {
     gen: AtomicU64,

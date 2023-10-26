@@ -1,6 +1,9 @@
 use std::cell::Cell;
 use std::sync::Arc;
 
+use crate::tslm::endpoint::Endpoint;
+use common::error::AppError;
+use common::message::{ClientCommand, TerminalStreamCommand};
 use futures_util::future::select;
 use futures_util::stream::SplitSink;
 use futures_util::{pin_mut, SinkExt, StreamExt};
@@ -12,8 +15,6 @@ use tokio::task::JoinHandle;
 use tokio_tungstenite::{accept_async, WebSocketStream};
 use tungstenite::Message;
 
-use crate::tslm::endpoint::{ClientCommand, Endpoint, TerminalStreamCommand};
-use crate::tslm::error::AppError;
 use crate::tslm::hub::Hub;
 
 pub struct WebsocketServer {

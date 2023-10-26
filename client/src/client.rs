@@ -1,14 +1,11 @@
-
 use std::sync::Arc;
 
+use crate::websocket::{Websocket, WebsocketEventHandler};
+use common::error::AppError;
+use common::message::{ChannelId, ChannelMessage, TerminalStreamCommand};
 use log::{debug, error};
 use tokio::runtime::Runtime;
 use tungstenite::Message;
-
-use crate::tslm::channel::ChannelId;
-use crate::tslm::client::websocket::{Websocket, WebsocketEventHandler};
-use crate::tslm::endpoint::{ChannelMessage, TerminalStreamCommand};
-use crate::tslm::error::AppError;
 
 pub struct LastMileClient {
     handler: Arc<LastMileClientHandler>,

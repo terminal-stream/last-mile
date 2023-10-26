@@ -1,36 +1,7 @@
-[package]
-name = "tslm"
-version = "0.1.0"
-edition = "2021"
-
-[[bin]]
-name = "server"
-path = "src/server.rs"
-
-[[bin]]
-name = "client"
-path = "src/client.rs"
-
-[dependencies]
-
-# log interface and implementation
-log = { version = "0.4.17" }
-log4rs = { version = "1.1.1" }
-
-# serialization
-serde = { version = "1.0" }
-serde_json = "1.0"
-
-# non blocking io tasking
-tokio = { version = "1.10.0", features = ["full"] }
-
-# blocking
-crossbeam = { version = "0.8.1" }
-
-# websocket server 3 (tokio-tungstenite)
-tungstenite = "0.20.0"
-tokio-tungstenite = { version = "0.20.0", features = ["native-tls"] }
-futures = "0.3"
-futures-util = { version = "0.3" }
-futures-channel = "0.3"
-
+[workspace]
+resolver = "2"
+members = [
+    "common",
+    "client",
+    "server",
+]

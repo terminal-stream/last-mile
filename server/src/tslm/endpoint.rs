@@ -1,35 +1,12 @@
 use std::sync::Arc;
 
-use serde::{Deserialize, Serialize};
-
+use common::error::AppError;
+use common::message::{ChannelId, ChannelMessage, ClientCommand, TerminalStreamCommand};
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
-use crate::tslm::channel::ChannelId;
 use crate::tslm::directory::Directory;
-use crate::tslm::error::AppError;
 
 pub type EndpointId = u64;
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum ChannelMessage {
-    Text(String),
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub enum TerminalStreamCommand {
-    CreateChannel(ChannelId),
-    Subscribe(ChannelId),
-    NotifyChannel(ChannelId, ChannelMessage),
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum ClientCommand {
-    /// text primitive, useful for debugging
-    #[allow(dead_code)]
-    Text(String),
-    /// An incoming message from the given channel
-    ChannelMessage(ChannelId, String),
-}
 
 pub struct Endpoint {
     pub id: EndpointId,

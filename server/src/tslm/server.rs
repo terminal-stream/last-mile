@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
+use common::error::AppError;
 use crossbeam::channel::Sender;
 use tokio::runtime::Builder as TokioRtBuilder;
 
-use crate::tslm::error::AppError;
 use crate::tslm::hub::Hub;
 use crate::tslm::websocket::WebsocketServer;
 
