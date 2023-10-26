@@ -134,24 +134,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "client"
-version = "0.1.0"
-dependencies = [
- "common",
- "crossbeam",
- "futures",
- "futures-channel",
- "futures-util",
- "log",
- "log4rs",
- "serde",
- "serde_json",
- "tokio",
- "tokio-tungstenite",
- "tungstenite",
-]
-
-[[package]]
 name = "common"
 version = "0.1.0"
 dependencies = [
@@ -547,6 +529,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5f195fe497f702db0f318b07fdd68edb16955aed830df8363d837542f8f935a"
 dependencies = [
  "wasm-bindgen",
+]
+
+[[package]]
+name = "last-mile-client"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "crossbeam",
+ "futures",
+ "futures-channel",
+ "futures-util",
+ "log",
+ "log4rs",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-tungstenite",
+ "tungstenite",
+]
+
+[[package]]
+name = "last-mile-server"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "crossbeam",
+ "futures",
+ "futures-channel",
+ "futures-util",
+ "log",
+ "log4rs",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-tungstenite",
+ "tungstenite",
 ]
 
 [[package]]
@@ -1175,24 +1193,6 @@ dependencies = [
  "native-tls",
  "tokio",
  "tokio-native-tls",
- "tungstenite",
-]
-
-[[package]]
-name = "tslm"
-version = "0.1.0"
-dependencies = [
- "common",
- "crossbeam",
- "futures",
- "futures-channel",
- "futures-util",
- "log",
- "log4rs",
- "serde",
- "serde_json",
- "tokio",
- "tokio-tungstenite",
  "tungstenite",
 ]
 

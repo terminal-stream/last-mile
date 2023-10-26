@@ -1,5 +1,5 @@
 [package]
-name = "client"
+name = "last-mile-client"
 version = "0.1.0"
 edition = "2021"
 authors = ["Ivan Spiler <spiler@gmail.com>"]
