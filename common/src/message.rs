@@ -1,10 +1,12 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 pub type ChannelId = String;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ChannelMessage {
     Text(String),
+    Json(Value),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -20,5 +22,7 @@ pub enum ClientCommand {
     #[allow(dead_code)]
     Text(String),
     /// An incoming message from the given channel
-    ChannelMessage(ChannelId, String),
+    ChannelMessage(ChannelId, ChannelMessage),
+    // ChannelMessageJson(ChannelId, Value),
+
 }

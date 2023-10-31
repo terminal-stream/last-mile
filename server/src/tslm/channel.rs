@@ -28,12 +28,7 @@ impl Channel {
 
     pub fn publish(&self, message: ChannelMessage) -> Result<(), AppError> {
         let subscriptions = self.subscriptions.read().map_err(AppError::from)?;
-
-        let client_cmd = match message {
-            ChannelMessage::Text(txt) => {
-                ClientCommand::ChannelMessage(self.channel_id.clone(), txt)
-            }
-        };
+        let client_cmd = ClientCommand::ChannelMessage(self.channel_id.clone(), message);
         for endpoint in subscriptions.iter() {
             // need to make a copy for each
             match endpoint.send(client_cmd.clone()) {

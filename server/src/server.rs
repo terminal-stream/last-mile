@@ -1,7 +1,5 @@
 mod tslm;
-
 use std::error::Error;
-
 use crate::tslm::server::Builder;
 use log::LevelFilter;
 use log4rs::append::console::ConsoleAppender;
