@@ -34,13 +34,16 @@ impl Channel {
         self.unsubscribe_guarded(endpoint_id, &mut subscriptions)
     }
 
-    fn unsubscribe_guarded(&self, endpoint_id: &EndpointId, subscriptions: &mut RwLockWriteGuard<BTreeMap<EndpointId, Arc<Endpoint>>>) -> Result<(), AppError> {
+    fn unsubscribe_guarded(
+        &self,
+        endpoint_id: &EndpointId,
+        subscriptions: &mut RwLockWriteGuard<BTreeMap<EndpointId, Arc<Endpoint>>>,
+    ) -> Result<(), AppError> {
         let _ = subscriptions.remove(endpoint_id);
         Ok(())
     }
 
     pub fn publish(&self, message: ChannelMessage) -> Result<(), AppError> {
-
         let mut prune = Vec::<EndpointId>::default();
         'fanout: {
             let subscriptions = self.subscriptions.read().map_err(AppError::from)?;
@@ -70,7 +73,10 @@ impl Channel {
                     match self.unsubscribe_guarded(&endpoint_id, &mut subs) {
                         Ok(_) => {}
                         Err(err) => {
-                            error!("Error while unsubscribing endpoint {}, {}", endpoint_id, err);
+                            error!(
+                                "Error while unsubscribing endpoint {}, {}",
+                                endpoint_id, err
+                            );
                         }
                     }
                 });

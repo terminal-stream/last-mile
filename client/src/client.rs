@@ -4,9 +4,9 @@ use crate::websocket::{Websocket, WebsocketEventHandler};
 use common::error::AppError;
 use common::message::{ChannelId, ChannelMessage, TerminalStreamCommand};
 use log::{debug, error};
+use serde_json::Value;
 use tokio::runtime::Runtime;
 use tungstenite::Message;
-use serde_json::Value;
 
 pub struct LastMileClient {
     handler: Arc<LastMileClientHandler>,
@@ -43,7 +43,11 @@ impl LastMileClient {
         self.send(command)
     }
 
-    pub fn notify_channel_json(&self, channel_id: &ChannelId, value: Value) -> Result<(), AppError> {
+    pub fn notify_channel_json(
+        &self,
+        channel_id: &ChannelId,
+        value: Value,
+    ) -> Result<(), AppError> {
         let command =
             TerminalStreamCommand::NotifyChannel(channel_id.clone(), ChannelMessage::Json(value));
         self.send(command)

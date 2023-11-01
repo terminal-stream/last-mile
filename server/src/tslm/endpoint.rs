@@ -1,4 +1,3 @@
-
 use std::sync::Arc;
 
 use common::error::AppError;
@@ -16,7 +15,6 @@ pub struct Endpoint {
 }
 
 impl Endpoint {
-
     pub fn new(
         id: EndpointId,
         directory: Arc<Directory>,
@@ -63,7 +61,6 @@ impl Endpoint {
     }
 
     pub fn unregister(&self) -> Result<(), AppError> {
-        let _ = self.directory.unregister_endpoint(&self.id)?;
-        Ok(())
+        self.directory.unregister_endpoint(&self.id)
     }
 }

@@ -85,7 +85,6 @@ impl WebsocketServer {
                 pin_mut!(incoming, outgoing);
                 select(incoming, outgoing).await;
                 // either sending or receiving stopped so unregister the endpoint
-                error!("############ in/out stopped stop endpoint ######");
                 let _ = endpoint.unregister();
             }
         };

@@ -76,5 +76,4 @@ impl Directory {
             .ok_or(AppError::msg_str("No such channel"))?;
         channel.subscribe(endpoint)
     }
-
 }

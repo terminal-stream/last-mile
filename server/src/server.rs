@@ -1,10 +1,10 @@
 mod tslm;
-use std::error::Error;
 use crate::tslm::server::Builder;
 use log::LevelFilter;
 use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Root};
 use log4rs::Config;
+use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let stdout = ConsoleAppender::builder().build();

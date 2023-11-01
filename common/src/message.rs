@@ -24,5 +24,4 @@ pub enum ClientCommand {
     /// An incoming message from the given channel
     ChannelMessage(ChannelId, ChannelMessage),
     // ChannelMessageJson(ChannelId, Value),
-
 }
