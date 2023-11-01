@@ -1,4 +1,5 @@
 use std::cell::Cell;
+use std::net::SocketAddr;
 use std::sync::Arc;
 
 use crate::tslm::endpoint::Endpoint;
@@ -22,15 +23,18 @@ pub struct WebsocketServer {
 }
 
 impl WebsocketServer {
-    pub fn new(runtime: Arc<Runtime>, hub: Arc<Hub>) -> Self {
-        let addr = "127.0.0.1:8080".to_string();
+    pub fn new(runtime: Arc<Runtime>, addr: SocketAddr, hub: Arc<Hub>) -> Self {
         let handler_rt = Arc::clone(&runtime);
         let listener_handle =
             Cell::new(runtime.spawn(WebsocketServer::listener(addr, hub, handler_rt)));
         WebsocketServer { listener_handle }
     }
 
-    async fn listener(addr: String, hub: Arc<Hub>, runtime: Arc<Runtime>) -> Result<(), AppError> {
+    async fn listener(
+        addr: SocketAddr,
+        hub: Arc<Hub>,
+        runtime: Arc<Runtime>,
+    ) -> Result<(), AppError> {
         let try_socket = TcpListener::bind(&addr).await;
         let listener = try_socket.map_err(AppError::from)?;
         while let Ok((stream, _addr)) = listener.accept().await {

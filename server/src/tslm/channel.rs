@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
 
-use log::{debug, error};
+use log::error;
 
 use common::error::AppError;
 use common::message::{ChannelMessage, ClientCommand};
