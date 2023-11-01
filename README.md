@@ -38,7 +38,7 @@ from a more extensive, dedicated development effort.
 ## Acknowledgements
 
 * The current message schemas are experimental and terrible JSON. The reason is that this initial implementation is
-  using serializing enums directly as it is quite practical for experimentation but terrible as API definitions.
+  serializing enums directly as it is quite practical for experimentation but terrible as API definitions.
   Message schemas will change drastically in the next versions.
 
 ---
