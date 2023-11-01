@@ -45,8 +45,8 @@ from a more extensive, dedicated development effort.
 
 ## TODO
 
-* Server configuration.
-* Multiple network interface/ip/port binding.
+* ~~Server configuration.~~
+* ~~Multiple network interface/ip/port binding.~~
 * Client fallback mechanism by protocol.
 * Channel backlog.
 * Identified messages for replies.
