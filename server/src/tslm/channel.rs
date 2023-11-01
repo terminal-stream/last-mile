@@ -53,7 +53,7 @@ impl Channel {
                 // need to make a copy for each
                 match endpoint.send(client_cmd.clone()) {
                     Ok(_) => {
-                        debug!("Sent msg correctly.");
+                        // debug!("Sent msg correctly.");
                     }
                     Err(_err) => {
                         // On any send error unsubscribe the endpoint from the channel.

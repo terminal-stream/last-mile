@@ -108,7 +108,6 @@ impl WebsocketServer {
             }
             Message::Text(txt) => {
                 // parse into ts command
-                debug!("Received ws msg {}", txt);
                 match serde_json::from_str::<TerminalStreamCommand>(txt.as_str()) {
                     Ok(ts_cmd) => Some(ts_cmd),
                     Err(err) => {
@@ -141,7 +140,6 @@ impl WebsocketServer {
                 match endpoint.on_command(msg) {
                     Ok(_) => {
                         // send ack to the client?
-                        debug!("Ack.");
                     }
                     Err(err) => {
                         // send the error to the client?
