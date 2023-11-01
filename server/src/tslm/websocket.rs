@@ -35,9 +35,14 @@ impl WebsocketServer {
         let listener = try_socket.map_err(AppError::from)?;
         while let Ok((stream, _addr)) = listener.accept().await {
             // Spawn asap so this does not block accepting other incoming conns.
-            if let Ok((endpoint, tx)) = hub.create_endpoint() {
-                runtime.spawn(WebsocketServer::connection_handler(stream, tx, endpoint));
-            } // else its done
+            match hub.create_endpoint() {
+                Ok((endpoint, tx)) => {
+                    runtime.spawn(WebsocketServer::connection_handler(stream, tx, endpoint));
+                }
+                Err(err) => {
+                    error!("Error: {}", err);
+                }
+            }
         }
         Ok(())
     }
@@ -54,10 +59,11 @@ impl WebsocketServer {
             }
             Ok(tcp_stream) => {
                 let (mut tx, mut rx) = tcp_stream.split();
+                let in_ref = Arc::clone(&endpoint);
                 let incoming = async move {
                     // stop on none
                     while let Some(Ok(msg)) = rx.next().await {
-                        Self::handle_incoming_message(&endpoint, msg);
+                        Self::handle_incoming_message(&in_ref, msg);
                     }
                 };
 
@@ -78,6 +84,9 @@ impl WebsocketServer {
                 // either a msg incoming from tcp/websocket or from client channel going to the socket
                 pin_mut!(incoming, outgoing);
                 select(incoming, outgoing).await;
+                // either sending or receiving stopped so unregister the endpoint
+                error!("############ in/out stopped stop endpoint ######");
+                let _ = endpoint.unregister();
             }
         };
     }

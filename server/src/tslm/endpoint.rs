@@ -1,3 +1,4 @@
+
 use std::sync::Arc;
 
 use common::error::AppError;
@@ -15,6 +16,7 @@ pub struct Endpoint {
 }
 
 impl Endpoint {
+
     pub fn new(
         id: EndpointId,
         directory: Arc<Directory>,
@@ -28,13 +30,14 @@ impl Endpoint {
     pub fn on_command(&self, cmd: TerminalStreamCommand) -> Result<(), AppError> {
         match cmd {
             TerminalStreamCommand::CreateChannel(channel_id) => {
-                self.directory.create_channel(channel_id)
+                self.directory.create_channel(channel_id)?
             }
-            TerminalStreamCommand::Subscribe(channel_id) => self.subscribe(&channel_id),
+            TerminalStreamCommand::Subscribe(channel_id) => self.subscribe(&channel_id)?,
             TerminalStreamCommand::NotifyChannel(channel_id, msg) => {
-                self.notify_channel(&channel_id, &msg)
+                self.notify_channel(&channel_id, &msg)?
             }
         }
+        Ok(())
     }
 
     fn notify_channel(&self, channel_id: &ChannelId, msg: &ChannelMessage) -> Result<(), AppError> {
@@ -57,5 +60,10 @@ impl Endpoint {
     // send this command to the client
     pub fn send(&self, msg: ClientCommand) -> Result<(), AppError> {
         self.tx.send(msg).map_err(AppError::from)
+    }
+
+    pub fn unregister(&self) -> Result<(), AppError> {
+        let _ = self.directory.unregister_endpoint(&self.id)?;
+        Ok(())
     }
 }

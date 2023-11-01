@@ -31,6 +31,17 @@ impl Directory {
         Ok(())
     }
 
+    pub fn unregister_endpoint(&self, endpoint_id: &EndpointId) -> Result<(), AppError> {
+        let mut endpoints = self.endpoints_by_id.write().map_err(AppError::from)?;
+        let _ = endpoints.remove(endpoint_id);
+        // TODO
+        //  Design Decision: unregistering endpoints do not tell channels to unsubscribe the endpoint.
+        //  The way it is designed now channels will fail to send a message and de-subscribe the
+        //  endpoints on their own.
+        //  Also means that a channel can detect a disconnection earlier than the hub.
+        Ok(())
+    }
+
     pub fn find_endpoint(&self, endpoint_id: &EndpointId) -> Option<Arc<Endpoint>> {
         let endpoints = self.endpoints_by_id.read().map_err(AppError::from).ok()?;
         endpoints.get(endpoint_id).map(Arc::clone)
@@ -65,4 +76,5 @@ impl Directory {
             .ok_or(AppError::msg_str("No such channel"))?;
         channel.subscribe(endpoint)
     }
+
 }
