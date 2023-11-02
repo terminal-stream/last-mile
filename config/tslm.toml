@@ -2,7 +2,9 @@
 ## This configuration is intended for development.
 ##
 ##  Create a toml table for each listener as required, this example is defining
-## "public" and "private" listeners.
+## 2 listeners called "public" and "private". At this time there is no special
+## configuration other than the network interface and port. In the roadmap the
+## listeners will have different configurable behaviours.
 ##
 ###############################################################################
 
