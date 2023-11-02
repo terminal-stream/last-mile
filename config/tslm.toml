@@ -1,3 +1,10 @@
+###############################################################################
+## This configuration is intended for development.
+##
+##  Create a toml table for each listener as required, this example is defining
+## "public" and "private" listeners.
+##
+###############################################################################
 
 [listener.public]
 # This should be the address that is accesible from the internet/public network.
