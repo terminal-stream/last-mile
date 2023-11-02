@@ -1,9 +1,8 @@
-use config::{File, Map};
-use log::debug;
-use serde::Deserialize;
 use std::net::IpAddr;
+use std::path::PathBuf;
 
-use common::error::AppError;
+use config::{File, Map};
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct ListenerConfig {
@@ -11,23 +10,24 @@ pub struct ListenerConfig {
     pub port: u16,
 }
 
+const DEFAULT_TSLM_FILE_NAME: &str = "tslm";
+
 #[derive(Deserialize, Debug)]
 pub struct Settings {
     pub listener: Map<String, ListenerConfig>,
 }
 
 impl Settings {
-    pub fn load() -> Self {
-        let source = File::with_name("config/tslm");
+    pub fn load(path: PathBuf) -> Self {
+        let tslm_path = path.join(DEFAULT_TSLM_FILE_NAME);
+        let source = File::from(tslm_path);
         let config = config::Config::builder()
             .add_source(source)
             .build()
-            .map_err(AppError::from)
             .expect("Error initializing configuration");
         let settings = config
             .try_deserialize()
             .expect("Error parsing configuration.");
-        debug!("Configuration loaded: {:?}", settings);
         settings
     }
 }

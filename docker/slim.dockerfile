@@ -10,5 +10,5 @@ RUN cargo install --bin server --path ./server --target-dir /usr/local/terminal.
 FROM debian:buster-slim
 RUN apt update
 RUN apt install openssl -y
-COPY --from=builder /usr/local/terminal.stream/server /usr/local/bin/terminal.stream/server
-CMD ["server"]
+COPY --from=builder /usr/local/terminal.stream/server/release/server /usr/local/bin/tslm-server
+ENTRYPOINT ["/usr/local/bin/tslm-server"]

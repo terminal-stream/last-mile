@@ -5,6 +5,7 @@ use std::sync::Arc;
 use crate::settings::Settings;
 use common::error::AppError;
 use crossbeam::channel::Sender;
+use log::info;
 use tokio::runtime::Builder as TokioRtBuilder;
 
 use crate::tslm::hub::Hub;
@@ -39,10 +40,11 @@ impl LastMileServer {
         let ws_rt = Arc::clone(&runtime);
 
         let mut listeners = Vec::new();
-        for (_name, listener_config) in settings.listener.iter() {
+        for (name, listener_config) in settings.listener.iter() {
             let address = SocketAddr::new(listener_config.ip, listener_config.port);
             let listener_rt = Arc::clone(&ws_rt);
             let websocket_listener = WebsocketServer::new(listener_rt, address, Arc::clone(&hub));
+            info!("Running websocket listener '{}' on: {}", name, address);
             listeners.push(websocket_listener);
         }
 

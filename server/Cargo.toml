@@ -38,3 +38,6 @@ futures-channel = "0.3"
 
 # server configuration
 config = "0.13.2"
+
+# cmd arguments
+clap = { version = "4.3.11", features = ["derive"] }

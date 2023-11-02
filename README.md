@@ -53,4 +53,4 @@ from a more extensive, dedicated development effort.
 * Auth with 3rd party sso using oauth2.
 * Using white listed public keys and hashes to validate publishers.
 * Channel configuration.
-* Docker to make it easier for others to build and run locally and give the server a try.
+* ~~Docker to make it easier for others to build and run locally and give the server a try.~~
