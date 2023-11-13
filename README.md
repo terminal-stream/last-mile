@@ -90,7 +90,7 @@ and the required executables to run the server so the image should be as small a
 
  These things combined make the build process faster as it caches and reduces the final image size.
 
- This examples are cross compiling to x86_64 which is the architecture I am using now at amazon, just change the 
+ The examples are cross compiling to x86_64 which is the architecture I am using now at amazon, just change the 
 target architecture to the one you are running in the ./docker/last-mile.dockerfile instructions.
 
 ---
