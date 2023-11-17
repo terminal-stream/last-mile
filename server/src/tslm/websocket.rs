@@ -2,9 +2,6 @@ use std::cell::Cell;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use crate::tslm::endpoint::Endpoint;
-use common::error::AppError;
-use common::message::{ClientCommand, TerminalStreamCommand};
 use futures_util::future::select;
 use futures_util::stream::SplitSink;
 use futures_util::{pin_mut, SinkExt, StreamExt};
@@ -16,17 +13,26 @@ use tokio::task::JoinHandle;
 use tokio_tungstenite::{accept_async, WebSocketStream};
 use tungstenite::Message;
 
-use crate::tslm::hub::Hub;
+use common::error::AppError;
+use common::message::{ClientCommand, TerminalStreamCommand};
+
+use crate::tslm::endpoint::Endpoint;
+use crate::tslm::hub::{EndpointFactorySettings, Hub};
 
 pub struct WebsocketServer {
     listener_handle: Cell<JoinHandle<Result<(), AppError>>>,
 }
 
 impl WebsocketServer {
-    pub fn new(runtime: Arc<Runtime>, addr: SocketAddr, hub: Arc<Hub>) -> Self {
+    pub fn new(
+        runtime: Arc<Runtime>,
+        addr: SocketAddr,
+        hub: Arc<Hub>,
+        settings: EndpointFactorySettings,
+    ) -> Self {
         let handler_rt = Arc::clone(&runtime);
         let listener_handle =
-            Cell::new(runtime.spawn(WebsocketServer::listener(addr, hub, handler_rt)));
+            Cell::new(runtime.spawn(WebsocketServer::listener(addr, hub, handler_rt, settings)));
         WebsocketServer { listener_handle }
     }
 
@@ -34,12 +40,13 @@ impl WebsocketServer {
         addr: SocketAddr,
         hub: Arc<Hub>,
         runtime: Arc<Runtime>,
+        settings: EndpointFactorySettings,
     ) -> Result<(), AppError> {
         let try_socket = TcpListener::bind(&addr).await;
         let listener = try_socket.map_err(AppError::from)?;
         while let Ok((stream, _addr)) = listener.accept().await {
             // Spawn asap so this does not block accepting other incoming conns.
-            match hub.create_endpoint() {
+            match hub.create_endpoint(&settings) {
                 Ok((endpoint, tx)) => {
                     runtime.spawn(WebsocketServer::connection_handler(stream, tx, endpoint));
                 }

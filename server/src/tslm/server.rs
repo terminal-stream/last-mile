@@ -1,14 +1,14 @@
 use std::net::SocketAddr;
-
 use std::sync::Arc;
 
-use crate::settings::Settings;
-use common::error::AppError;
 use crossbeam::channel::Sender;
 use log::info;
 use tokio::runtime::Builder as TokioRtBuilder;
 
-use crate::tslm::hub::Hub;
+use common::error::AppError;
+
+use crate::settings::Settings;
+use crate::tslm::hub::{EndpointFactorySettings, Hub};
 use crate::tslm::websocket::WebsocketServer;
 
 pub struct Builder {
@@ -36,14 +36,28 @@ impl LastMileServer {
             .build()
             .map_err(AppError::from)?;
         let runtime = Arc::new(runtime);
+
         let hub = Arc::new(Hub::new());
         let ws_rt = Arc::clone(&runtime);
 
         let mut listeners = Vec::new();
-        for (name, listener_config) in settings.listener.iter() {
+        for (name, listener_config) in settings.listener.into_iter() {
             let address = SocketAddr::new(listener_config.ip, listener_config.port);
             let listener_rt = Arc::clone(&ws_rt);
-            let websocket_listener = WebsocketServer::new(listener_rt, address, Arc::clone(&hub));
+
+            // TODO: move to builder when more options are introduced.
+            let endpoint_factory_settings = match listener_config.default_endpoint_permissions {
+                None => EndpointFactorySettings::default(),
+                Some(permissions) => EndpointFactorySettings {
+                    default_endpoint_permissions: permissions,
+                },
+            };
+            let websocket_listener = WebsocketServer::new(
+                listener_rt,
+                address,
+                Arc::clone(&hub),
+                endpoint_factory_settings,
+            );
             info!("Running websocket listener '{}' on: {}", name, address);
             listeners.push(websocket_listener);
         }
