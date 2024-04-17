@@ -1,13 +1,22 @@
+use std::collections::HashSet;
 use std::net::IpAddr;
 use std::path::PathBuf;
 
 use config::{File, Map};
 use serde::Deserialize;
 
+#[derive(Deserialize, Debug, Eq, PartialEq, Hash, Clone)]
+pub enum Permission {
+    Subscribe,
+    CreateChannel,
+    NotifyChannel,
+}
+
 #[derive(Deserialize, Debug)]
 pub struct ListenerConfig {
     pub ip: IpAddr,
     pub port: u16,
+    pub default_endpoint_permissions: Option<HashSet<Permission>>,
 }
 
 const DEFAULT_TSLM_FILE_NAME: &str = "tslm";
@@ -25,9 +34,9 @@ impl Settings {
             .add_source(source)
             .build()
             .expect("Error initializing configuration");
-        let settings = config
+
+        config
             .try_deserialize()
-            .expect("Error parsing configuration.");
-        settings
+            .expect("Error parsing configuration.")
     }
 }

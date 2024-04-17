@@ -12,9 +12,11 @@
 # This should be the address that is accesible from the internet/public network.
 ip = "0.0.0.0"
 port = 8080
+default_endpoint_permissions=['Subscribe']
 
 [listener.private]
 # This should be the address that is accesible only from the internal network.
-ip = "0.0.0.0"
+ip = "127.0.0.1"
 port = 8081
+default_endpoint_permissions=['CreateChannel', 'NotifyChannel']
 

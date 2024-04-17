@@ -60,7 +60,7 @@ impl Channel {
                         // TODO
                         //  Design Decision: Should notify hub to unregister the endpoint?
                         //  Not unregistering the endpoint from the hub for now.
-                        prune.push(id.clone());
+                        prune.push(*id);
                     }
                 }
             }

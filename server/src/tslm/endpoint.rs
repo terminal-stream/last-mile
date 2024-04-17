@@ -1,9 +1,13 @@
+use std::collections::HashSet;
 use std::sync::Arc;
+
+use log::warn;
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 use common::error::AppError;
 use common::message::{ChannelId, ChannelMessage, ClientCommand, TerminalStreamCommand};
-use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
+use crate::settings::Permission;
 use crate::tslm::directory::Directory;
 
 pub type EndpointId = u64;
@@ -12,27 +16,56 @@ pub struct Endpoint {
     pub id: EndpointId,
     directory: Arc<Directory>,
     tx: UnboundedSender<ClientCommand>,
+    allowed_commands: HashSet<Permission>,
 }
 
 impl Endpoint {
     pub fn new(
         id: EndpointId,
         directory: Arc<Directory>,
+        allowed_commands: HashSet<Permission>,
     ) -> (Arc<Endpoint>, UnboundedReceiver<ClientCommand>) {
         let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
-
-        let endpoint = Arc::new(Endpoint { id, tx, directory });
+        let endpoint = Arc::new(Endpoint {
+            id,
+            tx,
+            directory,
+            allowed_commands,
+        });
         (endpoint, rx)
     }
 
     pub fn on_command(&self, cmd: TerminalStreamCommand) -> Result<(), AppError> {
         match cmd {
             TerminalStreamCommand::CreateChannel(channel_id) => {
-                self.directory.create_channel(channel_id)?
+                if self.allowed_commands.contains(&Permission::CreateChannel) {
+                    self.directory.create_channel(channel_id)?
+                } else {
+                    warn!(
+                        "Endpoint {} attempted to create a channel without permissions.",
+                        self.id
+                    );
+                }
             }
-            TerminalStreamCommand::Subscribe(channel_id) => self.subscribe(&channel_id)?,
+            TerminalStreamCommand::Subscribe(channel_id) => {
+                if self.allowed_commands.contains(&Permission::Subscribe) {
+                    self.subscribe(&channel_id)?
+                } else {
+                    warn!(
+                        "Endpoint {} attempted to subscribe to a channel without permissions.",
+                        self.id
+                    );
+                }
+            }
             TerminalStreamCommand::NotifyChannel(channel_id, msg) => {
-                self.notify_channel(&channel_id, &msg)?
+                if self.allowed_commands.contains(&Permission::NotifyChannel) {
+                    self.notify_channel(&channel_id, &msg)?
+                } else {
+                    warn!(
+                        "Endpoint {} attempted to notify a channel without permissions.",
+                        self.id
+                    );
+                }
             }
         }
         Ok(())
