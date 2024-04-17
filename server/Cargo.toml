@@ -30,14 +30,14 @@ tokio = { version = "1.10.0", features = ["full"] }
 crossbeam = { version = "0.8.1" }
 
 # websocket server 3 (tokio-tungstenite)
-tungstenite = "0.20.0"
-tokio-tungstenite = { version = "0.20.0", features = ["native-tls"] }
+tungstenite = "0.21.0"
+tokio-tungstenite = { version = "0.21.0", features = ["native-tls"] }
 futures = "0.3"
 futures-util = { version = "0.3" }
 futures-channel = "0.3"
 
 # server configuration
-config = "0.13.2"
+config = "0.14.0"
 
 # cmd arguments
 clap = { version = "4.3.11", features = ["derive"] }
