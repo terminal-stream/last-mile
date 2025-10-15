@@ -130,6 +130,25 @@ make run             # Build and run in debug mode
 make doc             # Generate and view API docs
 ```
 
+### Git Hooks
+
+The project includes a pre-commit hook that enforces code quality by running formatting and linting checks before each commit. This helps maintain consistent code quality across the codebase.
+
+**Install git hooks:**
+```bash
+./scripts/install-hooks.sh
+```
+
+**What the pre-commit hook does:**
+- Runs `cargo fmt --all -- --check` to verify code formatting
+- Runs `cargo clippy --all-targets --all-features --workspace -- -D warnings` to check for warnings
+- Blocks the commit if any check fails
+
+**Bypass the hook (not recommended):**
+```bash
+git commit --no-verify
+```
+
 ## Architecture
 
 - **Hub**: Central coordination point
