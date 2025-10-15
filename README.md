@@ -21,7 +21,7 @@ TSLM acts as a WebSocket gateway enabling publishers to push messages from inter
 
 ### Installation
 
-**Prerequisites:** Rust 1.90+ (2024 edition), OpenSSL development libraries (for local builds)
+**Prerequisites:** Rust nightly (edition 2024), OpenSSL development libraries (for local builds)
 
 ```bash
 git clone https://github.com/terminal-stream/last-mile.git
@@ -112,7 +112,7 @@ make docker-stop    # Stop the container
 ```
 
 The Docker build uses a unified multi-stage build:
-- **Build stage**: Rust 1.90 with musl for static linking
+- **Build stage**: Rust nightly with musl for static linking
 - **Runtime stage**: Scratch base for minimal image size (~10MB)
 - Fully static binary with no runtime dependencies
 

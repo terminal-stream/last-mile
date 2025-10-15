@@ -1,5 +1,5 @@
-# Build stage using Rust 1.90
-FROM rust:1.90-bookworm AS builder
+# Build stage using Rust nightly (required for edition 2024)
+FROM rust:nightly-bookworm AS builder
 
 # Install build dependencies for static linking
 RUN apt-get update && \

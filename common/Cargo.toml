@@ -2,7 +2,6 @@
 name = "common"
 version = "0.1.0"
 edition.workspace = true
-rust-version.workspace = true
 authors = ["Ivan Spiler <spiler@gmail.com>"]
 license = "Apache-2.0"
 description = "Shared types and utilities for TSLM WebSocket gateway"
