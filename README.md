@@ -1,105 +1,161 @@
 # TSLM - Terminal Stream Last Mile
 
----
+[![CI](https://github.com/terminal-stream/last-mile/workflows/CI/badge.svg)](https://github.com/terminal-stream/last-mile/actions)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-This is an asynchronous WebSocket server written in Rust using tokio-tungstenite. It allows a WebSocket client to
-perform the following actions:
+An asynchronous WebSocket gateway server written in Rust. TSLM provides a secure pub/sub messaging system with resource protection and rate limiting.
 
-- Create a channel.
-- Notify the channel with relevant data.
-- Subscribe to a channel.
-- Receive messages from the subscribed channels.
+## Overview
 
-The purpose of this server is to act as a websocket gateway.
+TSLM acts as a WebSocket gateway enabling publishers to push messages from internal applications to the gateway, which fans out to subscribers on public networks. In a security breach scenario, the gateway cannot connect back into the internal network, limiting the attack surface.
 
-As a gateway publishers should be able to selectively push messages from the internal/private/intranet applications to
-the gateway for it to fan out messages to subscribers connected from public networks without compromising security.
+### Features
 
-In the probable event of getting hacked the gateway server should not be able to connect inward into the intranet
-limiting the area vulnerable to attacks.
+- **Pub/Sub Messaging**: Create channels, publish messages, subscribe to updates
+- **Security**: Token authentication, permission-based access control (CreateChannel, Subscribe, NotifyChannel)
+- **Resource Protection**: Configurable connection limits, rate limiting (token bucket), message size validation
+- **Reliability**: Backpressure control with bounded channels, graceful shutdown, type-safe error handling
+- **Flexible Configuration**: Multiple listeners with independent settings, per-listener authentication and limits
 
----
+## Quick Start
 
-## IMPORTANT NOTE:
+### Installation
 
-This server is a weekend project, and while functional, it might not have the full range of features you might expect
-from a more extensive, dedicated development effort.
+**Prerequisites:** Rust 1.90+ (2024 edition), OpenSSL development libraries (for local builds)
 
----
+```bash
+git clone https://github.com/terminal-stream/last-mile.git
+cd last-mile
+make build-release
+make test
+make run-release
+```
 
-## Acknowledgements
+### Configuration
 
-* The current message schemas are experimental and terrible JSON. The reason is that this initial implementation is
-  serializing enums directly as it is quite practical for experimentation but terrible as API definitions.
-  Message schemas will change drastically in the next versions.
+Create `config/tslm.toml`:
 
----
+```toml
+# Public listener for subscribers
+[listener.public]
+ip = "0.0.0.0"
+port = 8080
+default_endpoint_permissions = ['Subscribe']
+auth_tokens = ['public-token-1']
+max_connections = 10000
+max_message_size = 65536
+channel_buffer_size = 100
+rate_limit_per_second = 10
 
-## How to run
+# Private listener for publishers
+[listener.private]
+ip = "127.0.0.1"
+port = 8081
+default_endpoint_permissions = ['CreateChannel', 'NotifyChannel']
+max_connections = 100
+max_message_size = 131072
+```
 
-### From source
+### Message Protocol
 
-This is the source code so it is possible to just build and run locally running:
+**Subscribe to a channel:**
+```json
+{"Subscribe": "channel-name"}
+```
 
-    cargo run
+**Create a channel:**
+```json
+{"CreateChannel": "channel-name"}
+```
 
-And get a local server running just to play around and debug.
+**Publish to a channel:**
+```json
+{"NotifyChannel": ["channel-name", {"Text": "Hello, World!"}]}
+```
 
-Note: ***The code expects your local to have openssl installed.***
+**Server responses:**
+```json
+{"Success": "Command executed: Subscribe(\"channel-name\")"}
+{"Error": "Permission denied: CreateChannel"}
+{"ChannelMessage": ["channel-name", {"Text": "Hello, World!"}]}
+```
 
-### As docker container
+## Configuration Reference
 
-The repo also provides example dockerfiles at ./docker that can be used to build a docker image that you can push to
-your
-registry and run.
+| Option | Type | Description | Default |
+|--------|------|-------------|---------|
+| `ip` | String | Bind IP address | Required |
+| `port` | u16 | Bind port | Required |
+| `default_endpoint_permissions` | Array | Allowed permissions: `Subscribe`, `CreateChannel`, `NotifyChannel` | `[]` |
+| `auth_tokens` | Array | Authentication tokens (optional) | None |
+| `max_connections` | Number | Maximum concurrent connections | Unlimited |
+| `max_message_size` | Number | Maximum message size (bytes) | 65536 |
+| `max_frame_size` | Number | Maximum WebSocket frame size (bytes) | 16777216 |
+| `channel_buffer_size` | Number | Buffer size for backpressure (0 = unbounded) | 0 |
+| `rate_limit_per_second` | Number | Messages per second per connection | None |
 
-#### Build the dependencies
+### Configuration Tips
 
-There are 3 dockerfiles at ./docker:
+**Public-facing listeners:** Use authentication tokens, set connection/rate limits, restrict to `Subscribe` permission only.
 
-* 'build-amazonlinux-openssl-rust.dockerfile' that builds a 'builder' image.
-* 'exec-amazonlinux-openssl.dockerfile' that build the execution environment image.
-* 'last-mile.dockerfile' uses these 2 previously images as builder and execution environments.
+**Internal listeners:** Higher limits, allow `CreateChannel` and `NotifyChannel` permissions, bind to `127.0.0.1`.
 
-So first go into ./docker and build the 2 images:
+**Resource tuning:** Set `channel_buffer_size` to prevent memory exhaustion from slow consumers. Set `rate_limit_per_second` to prevent abuse.
 
-    # from ./docker
-    ./docker_build.sh
-    ./docker_exec.sh
+## Docker Deployment
 
-#### Build the image
+```bash
+make docker-build   # Build Docker image (unified multi-stage build)
+make docker-run     # Run container with mounted config
+make docker-logs    # View container logs
+make docker-stop    # Stop the container
+```
 
-Now you can run ./docker_build.sh that will use the 'last-mile.dockerfile' to build the final image.
+The Docker build uses a unified multi-stage build:
+- **Build stage**: Rust 1.90 with musl for static linking
+- **Runtime stage**: Scratch base for minimal image size (~10MB)
+- Fully static binary with no runtime dependencies
 
-#### Run the image
+## Development
 
-'./docker-run.sh' is an example, just mounts ./config to a path where the container expects to find the config and runs
-the server.
+See [CLAUDE.md](CLAUDE.md) for architecture overview and development guide.
 
-#### Conclusion
+**Common commands:**
+```bash
+make help            # Show all available targets
+make build           # Build in debug mode
+make test            # Run all tests (15 tests)
+make check           # Run clippy, fmt check, and tests
+make run             # Build and run in debug mode
+make doc             # Generate and view API docs
+```
 
-The docker builder image takes care of installing rust, openssl and other dependencies the project might require to
-build.
+## Architecture
 
-Then the docker exec image continues by setting up the environment again but only with the minimal required binary
-dependencies
-and the required executables to run the server so the image should be as small as possible.
+- **Hub**: Central coordination point
+- **Directory**: Registry of channels and endpoints (RwLock-based)
+- **Channel**: Pub/sub topic with automatic pruning of failed endpoints
+- **Endpoint**: Represents a WebSocket connection with permissions
+- **WebSocket Server**: Handles connections with rate limiting and backpressure
 
-These things combined make the build process faster as it caches and reduces the final image size.
+## Roadmap
 
-The examples are cross compiling to x86_64 which is the architecture I am using now at amazon, just change the
-target architecture to the one you are running in the ./docker/last-mile.dockerfile instructions.
+- Timeout configurations (idle, max duration)
+- Correlation IDs for request/response matching
+- Channel backlog/history
+- TLS/SSL support
+- Prometheus metrics
+- OAuth2 integration
+- Message schema improvements (move away from enum serialization)
 
----
+## Contributing
 
-## TODO
+Contributions welcome! The CI pipeline runs on all PRs with tests and linting.
 
-* ~~Server configuration.~~
-* ~~Multiple network interface/ip/port binding.~~
-* Client fallback mechanism by protocol.
-* Channel backlog.
-* Identified messages for replies.
-* Auth with 3rd party sso using oauth2.
-* Using white listed public keys and hashes to validate publishers.
-* Channel configuration.
-* ~~Docker to make it easier for others to build and run locally and give the server a try.~~
+## License
+
+Apache-2.0
+
+## Notes
+
+The current message protocol serializes Rust enums directly to JSON, which is practical but not ideal for stable APIs. Future versions will provide more language-agnostic message schemas.

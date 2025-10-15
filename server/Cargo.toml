@@ -1,11 +1,22 @@
 [package]
 name = "last-mile-server"
 version = "0.1.0"
-edition = "2021"
+edition.workspace = true
+rust-version.workspace = true
 authors = ["Ivan Spiler <spiler@gmail.com>"]
+license = "Apache-2.0"
+description = "A WebSocket gateway server for secure pub/sub messaging between internal networks and public clients"
+repository = "https://github.com/terminal-stream/last-mile"
+keywords = ["websocket", "gateway", "pubsub", "messaging", "server"]
+categories = ["network-programming", "web-programming::websocket"]
+readme = "../README.md"
 
 [badges]
 maintenance = { status = "experimental" }
+
+[lib]
+name = "last_mile_server"
+path = "src/lib.rs"
 
 [[bin]]
 name = "server"
@@ -15,9 +26,9 @@ path = "src/server.rs"
 
 common = { path = "../common" }
 
-# log interface and implementation
-log = { version = "0.4.17" }
-log4rs = { version = "1.1.1" }
+# tracing and logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 
 # serialization
 serde = { version = "1.0", features=["derive"] }
@@ -41,3 +52,10 @@ config = "0.14.0"
 
 # cmd arguments
 clap = { version = "4.3.11", features = ["derive"] }
+
+# rate limiting
+governor = "0.6"
+
+# OpenSSL with vendored feature for static builds
+[target.'cfg(target_env = "musl")'.dependencies]
+openssl = { version = "0.10", features = ["vendored"] }

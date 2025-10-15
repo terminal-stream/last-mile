@@ -1,16 +1,10 @@
 use std::error::Error;
 
 use clap::Parser;
-use log::LevelFilter;
-use log4rs::append::console::ConsoleAppender;
-use log4rs::config::{Appender, Root};
-use log4rs::Config;
+use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::settings::Settings;
-use crate::tslm::server::Builder;
-
-mod settings;
-mod tslm;
+use last_mile_server::settings::Settings;
+use last_mile_server::tslm::server::Builder;
 
 #[derive(Parser, Debug)]
 struct Arguments {
@@ -21,18 +15,20 @@ struct Arguments {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let arguments = Arguments::parse();
-    let settings = Settings::load(arguments.config_dir);
+    let settings = Settings::load(arguments.config_dir)?;
 
-    let stdout = ConsoleAppender::builder().build();
-    let config = Config::builder()
-        .appender(Appender::builder().build("stdout", Box::new(stdout)))
-        .build(Root::builder().appender("stdout").build(LevelFilter::Debug))?;
+    // Initialize tracing subscriber with default INFO level or from RUST_LOG env
+    tracing_subscriber::registry()
+        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
-    let log_handle = log4rs::init_config(config)?;
-
+    tracing::info!("Starting TSLM server...");
     let server = Builder::build_and_run(settings)?;
+
+    tracing::info!("Server running. Press Ctrl+C to shutdown gracefully.");
     server.await_termination()?;
 
-    drop(log_handle);
+    tracing::info!("Server shutdown complete.");
     Ok(())
 }

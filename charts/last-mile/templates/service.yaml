@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "last-mile.fullname" . }}
+  labels:
+    {{- include "last-mile.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    {{- if .Values.config.public.enabled }}
+    - port: {{ .Values.service.public.port }}
+      targetPort: {{ .Values.service.public.targetPort }}
+      protocol: TCP
+      name: public
+      {{- if and (eq .Values.service.type "NodePort") .Values.service.public.nodePort }}
+      nodePort: {{ .Values.service.public.nodePort }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.config.private.enabled }}
+    - port: {{ .Values.service.private.port }}
+      targetPort: {{ .Values.service.private.targetPort }}
+      protocol: TCP
+      name: private
+      {{- if and (eq .Values.service.type "NodePort") .Values.service.private.nodePort }}
+      nodePort: {{ .Values.service.private.nodePort }}
+      {{- end }}
+    {{- end }}
+  selector:
+    {{- include "last-mile.selectorLabels" . | nindent 4 }}

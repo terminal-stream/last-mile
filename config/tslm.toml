@@ -13,10 +13,28 @@
 ip = "0.0.0.0"
 port = 8080
 default_endpoint_permissions=['Subscribe']
+# Optional: Require authentication tokens for public connections
+# auth_tokens = ['token1', 'token2']
+# Optional: Set message size limits (in bytes)
+# max_message_size = 65536  # 64KB default
+# max_frame_size = 16777216  # 16MB default
+# Optional: Set maximum concurrent connections (default: unlimited)
+# max_connections = 1000
+# Optional: Set channel buffer size for backpressure (default: unbounded, 0 = unbounded)
+# channel_buffer_size = 100
+# Optional: Set rate limit (messages per second per connection)
+# rate_limit_per_second = 10
 
 [listener.private]
 # This should be the address that is accesible only from the internal network.
 ip = "127.0.0.1"
 port = 8081
 default_endpoint_permissions=['CreateChannel', 'NotifyChannel']
+# Typically internal listeners don't need auth, but you can add it
+# auth_tokens = ['internal_token']
+# Optional: Set message size limits (in bytes)
+# max_message_size = 131072  # 128KB for internal use
+# max_frame_size = 16777216  # 16MB default
+# Optional: Set maximum concurrent connections (default: unlimited)
+# max_connections = 100
 

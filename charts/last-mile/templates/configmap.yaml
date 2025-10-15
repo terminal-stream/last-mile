@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "last-mile.fullname" . }}-config
+  labels:
+    {{- include "last-mile.labels" . | nindent 4 }}
+data:
+  tslm.toml: |
+    {{- if .Values.config.public.enabled }}
+    [listener.public]
+    ip = {{ .Values.config.public.ip | quote }}
+    port = {{ .Values.config.public.port }}
+    {{- if .Values.config.public.defaultEndpointPermissions }}
+    default_endpoint_permissions = {{ .Values.config.public.defaultEndpointPermissions | toJson }}
+    {{- end }}
+    {{- if .Values.config.public.authTokens }}
+    auth_tokens = {{ .Values.config.public.authTokens | toJson }}
+    {{- end }}
+    {{- if .Values.config.public.maxMessageSize }}
+    max_message_size = {{ .Values.config.public.maxMessageSize }}
+    {{- end }}
+    {{- if .Values.config.public.maxFrameSize }}
+    max_frame_size = {{ .Values.config.public.maxFrameSize }}
+    {{- end }}
+    {{- if .Values.config.public.maxConnections }}
+    max_connections = {{ .Values.config.public.maxConnections }}
+    {{- end }}
+    {{- if .Values.config.public.channelBufferSize }}
+    channel_buffer_size = {{ .Values.config.public.channelBufferSize }}
+    {{- end }}
+    {{- if .Values.config.public.rateLimitPerSecond }}
+    rate_limit_per_second = {{ .Values.config.public.rateLimitPerSecond }}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.config.private.enabled }}
+    [listener.private]
+    ip = {{ .Values.config.private.ip | quote }}
+    port = {{ .Values.config.private.port }}
+    {{- if .Values.config.private.defaultEndpointPermissions }}
+    default_endpoint_permissions = {{ .Values.config.private.defaultEndpointPermissions | toJson }}
+    {{- end }}
+    {{- if .Values.config.private.authTokens }}
+    auth_tokens = {{ .Values.config.private.authTokens | toJson }}
+    {{- end }}
+    {{- if .Values.config.private.maxMessageSize }}
+    max_message_size = {{ .Values.config.private.maxMessageSize }}
+    {{- end }}
+    {{- if .Values.config.private.maxFrameSize }}
+    max_frame_size = {{ .Values.config.private.maxFrameSize }}
+    {{- end }}
+    {{- if .Values.config.private.maxConnections }}
+    max_connections = {{ .Values.config.private.maxConnections }}
+    {{- end }}
+    {{- if .Values.config.private.channelBufferSize }}
+    channel_buffer_size = {{ .Values.config.private.channelBufferSize }}
+    {{- end }}
+    {{- if .Values.config.private.rateLimitPerSecond }}
+    rate_limit_per_second = {{ .Values.config.private.rateLimitPerSecond }}
+    {{- end }}
+    {{- end }}

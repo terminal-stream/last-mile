@@ -2,20 +2,22 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use common::error::AppError;
-use futures_util::{future, pin_mut, SinkExt, StreamExt};
-use log::error;
+use futures_util::{SinkExt, StreamExt, future, pin_mut};
 use tokio::runtime::Runtime;
 use tokio::sync::mpsc::UnboundedSender;
 use tokio::task::JoinHandle;
 use tokio_tungstenite::tungstenite::http::Uri;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
+use tracing::error;
 
 pub struct Websocket<H>
 where
     H: WebsocketEventHandler + Sync + Send + 'static,
 {
+    #[allow(dead_code)]
     handle: JoinHandle<Result<(), AppError>>,
     sender: UnboundedSender<Message>,
+    #[allow(dead_code)]
     pub handler: Arc<H>,
 }
 

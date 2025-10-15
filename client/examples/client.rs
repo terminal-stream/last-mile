@@ -3,21 +3,16 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use last_mile_client::client::LastMileClient;
-use log::LevelFilter;
-use log4rs::append::console::ConsoleAppender;
-use log4rs::config::{Appender, Root};
-use log4rs::Config;
 use tokio::runtime::Builder;
 use tokio::time::sleep;
+use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 pub fn main() -> Result<(), Box<dyn Error>> {
-    let stdout = ConsoleAppender::builder().build();
-
-    let config = Config::builder()
-        .appender(Appender::builder().build("stdout", Box::new(stdout)))
-        .build(Root::builder().appender("stdout").build(LevelFilter::Debug))?;
-
-    let _log_handle = log4rs::init_config(config)?;
+    // Initialize tracing
+    tracing_subscriber::registry()
+        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("debug")))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let runtime = Arc::new(Builder::new_multi_thread().enable_all().build()?);
     let url = String::from("ws://localhost:8080/");
