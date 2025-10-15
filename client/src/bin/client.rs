@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand};
 use last_mile_client::client::LastMileClient;
 use tokio::runtime::Builder;
 use tokio::time::sleep;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Parser)]
 #[command(name = "tslm-client")]
@@ -60,9 +60,7 @@ enum Commands {
 fn main() -> Result<(), Box<dyn Error>> {
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(
-            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
-        )
+        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
