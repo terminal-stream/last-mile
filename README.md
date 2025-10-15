@@ -21,7 +21,7 @@ TSLM acts as a WebSocket gateway enabling publishers to push messages from inter
 
 ### Installation
 
-**Prerequisites:** Rust 1.90+ (2024 edition), OpenSSL development libraries (for local builds)
+**Prerequisites:** Rust nightly (edition 2024), OpenSSL development libraries (for local builds)
 
 ```bash
 git clone https://github.com/terminal-stream/last-mile.git
@@ -112,7 +112,7 @@ make docker-stop    # Stop the container
 ```
 
 The Docker build uses a unified multi-stage build:
-- **Build stage**: Rust 1.90 with musl for static linking
+- **Build stage**: Rust nightly with musl for static linking
 - **Runtime stage**: Scratch base for minimal image size (~10MB)
 - Fully static binary with no runtime dependencies
 
@@ -128,6 +128,25 @@ make test            # Run all tests (15 tests)
 make check           # Run clippy, fmt check, and tests
 make run             # Build and run in debug mode
 make doc             # Generate and view API docs
+```
+
+### Git Hooks
+
+The project includes a pre-commit hook that enforces code quality by running formatting and linting checks before each commit. This helps maintain consistent code quality across the codebase.
+
+**Install git hooks:**
+```bash
+./scripts/install-hooks.sh
+```
+
+**What the pre-commit hook does:**
+- Runs `cargo fmt --all -- --check` to verify code formatting
+- Runs `cargo clippy --all-targets --all-features --workspace -- -D warnings` to check for warnings
+- Blocks the commit if any check fails
+
+**Bypass the hook (not recommended):**
+```bash
+git commit --no-verify
 ```
 
 ## Architecture

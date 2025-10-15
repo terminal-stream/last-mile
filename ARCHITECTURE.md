@@ -63,7 +63,7 @@ make doc
 
 ### Docker
 
-The project uses a unified multi-stage Dockerfile with Rust 1.90 and musl for static linking.
+The project uses a unified multi-stage Dockerfile with Rust nightly and musl for static linking.
 
 ```bash
 # Build Docker image (unified multi-stage build)
@@ -83,7 +83,7 @@ make docker-clean
 ```
 
 The Docker image:
-- Build stage: Rust 1.90 with musl-tools for static compilation
+- Build stage: Rust nightly with musl-tools for static compilation
 - Runtime stage: Scratch (minimal ~10MB image)
 - Fully static binary with zero runtime dependencies
 
