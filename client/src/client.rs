@@ -47,7 +47,7 @@ impl LastMileClient {
     }
     fn send(&self, command: TerminalStreamCommand) -> Result<(), AppError> {
         let message = serde_json::to_string(&command).map_err(AppError::from)?;
-        self.ws.send(Message::Text(message));
+        self.ws.send(Message::Text(message.into()));
         Ok(())
     }
 

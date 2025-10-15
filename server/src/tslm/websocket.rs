@@ -163,11 +163,9 @@ impl WebsocketServer {
         });
 
         // Configure WebSocket with size limits
-        let ws_config = WebSocketConfig {
-            max_message_size: Some(config.max_message_size),
-            max_frame_size: Some(config.max_frame_size),
-            ..Default::default()
-        };
+        let mut ws_config = WebSocketConfig::default();
+        ws_config.max_message_size = Some(config.max_message_size);
+        ws_config.max_frame_size = Some(config.max_frame_size);
 
         let ws_stream = accept_async_with_config(tcp_stream, Some(ws_config))
             .await
@@ -226,7 +224,7 @@ impl WebsocketServer {
         cmd: ClientCommand,
     ) -> Result<(), AppError> {
         let json_string_command = serde_json::to_string(&cmd).map_err(AppError::from)?;
-        tx.send(Message::Text(json_string_command))
+        tx.send(Message::Text(json_string_command.into()))
             .await
             .map_err(AppError::from)
     }

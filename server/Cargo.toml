@@ -35,26 +35,26 @@ serde = { version = "1.0", features=["derive"] }
 serde_json = "1.0"
 
 # non blocking io tasking
-tokio = { version = "1.10.0", features = ["full"] }
+tokio = { version = "1.42", features = ["full"] }
 
 # blocking
-crossbeam = { version = "0.8.1" }
+crossbeam = { version = "0.8" }
 
 # websocket server 3 (tokio-tungstenite)
-tungstenite = "0.21.0"
-tokio-tungstenite = { version = "0.21.0", features = ["native-tls"] }
+tungstenite = "0.28"
+tokio-tungstenite = { version = "0.28", features = ["native-tls"] }
 futures = "0.3"
 futures-util = { version = "0.3" }
 futures-channel = "0.3"
 
 # server configuration
-config = "0.14.0"
+config = "0.14"
 
 # cmd arguments
-clap = { version = "4.3.11", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
 
 # rate limiting
-governor = "0.6"
+governor = "0.10"
 
 # OpenSSL with vendored feature for static builds
 [target.'cfg(target_env = "musl")'.dependencies]
