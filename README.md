@@ -118,7 +118,7 @@ The Docker build uses a unified multi-stage build:
 
 ## Development
 
-See [CLAUDE.md](CLAUDE.md) for architecture overview and development guide.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for architecture overview and development guide.
 
 **Common commands:**
 ```bash

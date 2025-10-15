@@ -449,7 +449,7 @@ kubectl delete pvc -l app.kubernetes.io/name=last-mile
 
 ## Next Steps
 
-- [Read the Architecture Guide](CLAUDE.md)
+- [Read the Architecture Guide](ARCHITECTURE.md)
 - [Review Configuration Options](charts/last-mile/README.md)
 - [Report Issues](https://github.com/terminal-stream/last-mile/issues)
 - [View Examples](client/examples/)
